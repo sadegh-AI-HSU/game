@@ -3,17 +3,22 @@ import random
 import json
 import time
 import sqlite3
+import os  # <-- این خط اضافه شد
 
 # ═══════════════════════════════════════════
-#  تنظیمات اولیه
+#  تنظیمات اولیه (خوانده شده از Railway)
 # ═══════════════════════════════════════════
-TOKEN = "1123175554:mYUGd9lE2mdSAPktMd_YvTbiqBgi9ZMqtXA"
+# اگر متغیرها در Railway ست نشده باشند، از مقادیر پیش‌فرض استفاده می‌کند
+TOKEN = os.getenv("TOKEN", "توکن_پیش‌فرض_اگر_ست_نشود")
+
+# تبدیل رشته شناسه‌های ادمین به لیست اعداد (مثلاً "123,456" به [123, 456])
+ADMIN_IDS_STR = os.getenv("ADMIN_IDS", "123456789")
+ADMIN_IDS = [int(x.strip()) for x in ADMIN_IDS_STR.split(",") if x.strip().isdigit()]
+
+GROUP_CHAT_ID = int(os.getenv("GROUP_CHAT_ID", "5752220430"))
+
 BASE_URL = f"https://tapi.bale.ai/bot{TOKEN}/"
-GROUP_CHAT_ID = 5752220430
-
-# ✨ شناسه‌های ادمین - شناسه عددی خود را اینجا بگذارید
-# برای پیدا کردن شناسه خود، به ربات @userinfobot در بله پیام دهید
-ADMIN_IDS = [1411467910]  # ⚠️ شناسه خود را جایگزین کنید
+# ... (بقیه کد ربات دقیقاً مثل قبل از اینجا به بعد ادامه پیدا می‌کند)
 
 # ═══════════════════════════════════════════
 #  داده‌های بازی
