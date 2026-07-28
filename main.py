@@ -1,24 +1,18 @@
-﻿import requests
+import requests
 import random
 import json
 import time
 import sqlite3
-import os  # <-- این خط اضافه شد
+import os
 
 # ═══════════════════════════════════════════
-#  تنظیمات اولیه (خوانده شده از Railway)
+#  تنظیمات اولیه (خوانده شده از متغیرهای محیطی)
 # ═══════════════════════════════════════════
-# اگر متغیرها در Railway ست نشده باشند، از مقادیر پیش‌فرض استفاده می‌کند
-TOKEN = os.getenv("TOKEN", "توکن_پیش‌فرض_اگر_ست_نشود")
-
-# تبدیل رشته شناسه‌های ادمین به لیست اعداد (مثلاً "123,456" به [123, 456])
+TOKEN = os.getenv("TOKEN")
 ADMIN_IDS_STR = os.getenv("ADMIN_IDS", "123456789")
 ADMIN_IDS = [int(x.strip()) for x in ADMIN_IDS_STR.split(",") if x.strip().isdigit()]
-
 GROUP_CHAT_ID = int(os.getenv("GROUP_CHAT_ID", "5752220430"))
-
 BASE_URL = f"https://tapi.bale.ai/bot{TOKEN}/"
-# ... (بقیه کد ربات دقیقاً مثل قبل از اینجا به بعد ادامه پیدا می‌کند)
 
 # ═══════════════════════════════════════════
 #  داده‌های بازی
@@ -26,10 +20,10 @@ BASE_URL = f"https://tapi.bale.ai/bot{TOKEN}/"
 COUNTRIES = {
     "usa": {"name": "آمریکا 🇺🇸", "budget": 1000, "bonus": "air", "bonus_val": 1.3, "flag": "🇺🇸"},
     "russia": {"name": "روسیه 🇷🇺", "budget": 950, "bonus": "tank", "bonus_val": 1.35, "flag": "🇷🇺"},
-    "china": {"name": "چین 🇨🇳", "budget": 900, "bonus": "soldier", "bonus_val": 1.3, "flag": "🇨🇳"},
+    "china": {"name": "چین 🇨", "budget": 900, "bonus": "soldier", "bonus_val": 1.3, "flag": "🇨🇳"},
     "india": {"name": "هند 🇮🇳", "budget": 750, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇮🇳"},
-    "uk": {"name": "انگلستان 🇬🇧", "budget": 800, "bonus": "ship", "bonus_val": 1.3, "flag": "🇬🇧"},
-    "france": {"name": "فرانسه 🇫🇷", "budget": 780, "bonus": "air", "bonus_val": 1.25, "flag": "🇫🇷"},
+    "uk": {"name": "انگلستان 🇬🇧", "budget": 800, "bonus": "ship", "bonus_val": 1.3, "flag": "🇧"},
+    "france": {"name": "فرانسه 🇷", "budget": 780, "bonus": "air", "bonus_val": 1.25, "flag": "🇫🇷"},
     "japan": {"name": "ژاپن 🇯🇵", "budget": 720, "bonus": "ship", "bonus_val": 1.3, "flag": "🇯🇵"},
     "turkey": {"name": "ترکیه 🇹🇷", "budget": 680, "bonus": "drone", "bonus_val": 1.35, "flag": "🇹🇷"},
     "iran": {"name": "ایران 🇮🇷", "budget": 700, "bonus": "missile", "bonus_val": 1.35, "flag": "🇮🇷"},
@@ -40,7 +34,7 @@ DEFAULT_EQUIPMENT = {
     "tank": {"name": "تانک 🛡️", "price": 80, "attack": 15, "defense": 20},
     "jet": {"name": "جنگنده ✈️", "price": 120, "attack": 25, "defense": 10},
     "ship": {"name": "ناو جنگی 🚢", "price": 150, "attack": 20, "defense": 25},
-    "soldier": {"name": "سرباز 🪖", "price": 50, "attack": 10, "defense": 10},
+    "soldier": {"name": "سرباز ", "price": 50, "attack": 10, "defense": 10},
     "missile": {"name": "موشک 🚀", "price": 200, "attack": 35, "defense": 0},
     "defense": {"name": "پدافند 🛡️", "price": 130, "attack": 0, "defense": 30},
     "drone": {"name": "پهپاد 🤖", "price": 90, "attack": 18, "defense": 5},
@@ -187,7 +181,7 @@ def show_shop(chat_id):
         return
     EQUIPMENT = get_equipment()
     country_info = COUNTRIES[user['country']]
-    text = f"🏪 *فروشگاه تجهیزات نظامی*\n\n🏳️ کشور: {country_info['name']} | 🎖️ سطح: {user['level']}\n💰 بودجه: {user['budget']} واحد\n\n📦 *تجهیزات شما:*\n"
+    text = f" *فروشگاه تجهیزات نظامی*\n\n️ کشور: {country_info['name']} | 🎖️ سطح: {user['level']}\n💰 بودجه: {user['budget']} واحد\n\n📦 *تجهیزات شما:*\n"
     has_item = False
     for eq_key, count in user['equipment'].items():
         if count > 0:
@@ -198,7 +192,7 @@ def show_shop(chat_id):
     keyboard_rows = []
     for eq_key, eq_info in EQUIPMENT.items():
         keyboard_rows.append([{"text": f"{eq_info['name']} | 💰{eq_info['price']} | ⚔️{eq_info['attack']} 🛡️{eq_info['defense']}", "callback_data": f"buy_{eq_key}"}])
-    keyboard_rows.append([{"text": "🗑️ فروش همه", "callback_data": "sell_all"}, {"text": "✅ آماده نبرد!", "callback_data": "ready_fight"}])
+    keyboard_rows.append([{"text": "️ فروش همه", "callback_data": "sell_all"}, {"text": "✅ آماده نبرد!", "callback_data": "ready_fight"}])
     send_message(chat_id, text, reply_markup={"inline_keyboard": keyboard_rows})
 
 def buy_equipment(chat_id, eq_key):
@@ -240,7 +234,7 @@ def start_battle(player1_id, player2_id):
         if p1['xp'] >= p1['level'] * 100: p1['level'], p1['budget'], p1['xp'] = p1['level'] + 1, p1['budget'] + 500, 0; report += f"\n\n🎉 *به سطح {p1['level']} رسیدید!*"
     elif p2_dmg > p1_dmg:
         p2['wins'], p2['xp'], p1['losses'] = p2['wins'] + 1, p2['xp'] + 50, p1['losses'] + 1
-        report += f"🏆 *برنده: {c2_name}!* 🎉"
+        report += f" *برنده: {c2_name}!* 🎉"
         if p2['xp'] >= p2['level'] * 100: p2['level'], p2['budget'], p2['xp'] = p2['level'] + 1, p2['budget'] + 500, 0; report += f"\n\n🎉 *به سطح {p2['level']} رسیدید!*"
     else:
         report += "🤝 *مساوی!*"
@@ -264,14 +258,12 @@ def find_opponent(chat_id):
     waiting_queue.append(chat_id)
     send_message(chat_id, "⏳ در صف انتظار...")
 
-# ✨ اصلاح شده: ارسال پیام به گروه فقط با ایموجی پرچم (بدون عکس)
 def send_to_group_with_flag(chat_id, text):
     user = get_user(chat_id)
     if not user or not user['country']:
         send_message(chat_id, "❌ ابتدا کشور خود را انتخاب کنید.")
         return
     country_info = COUNTRIES[user['country']]
-    # استفاده از ایموجی پرچم به جای عکس (حل مشکل HTTP URL)
     message = f"{country_info['flag']} *{country_info['name']}*\n\n{text}"
     result = send_message(GROUP_CHAT_ID, message)
     if result and result.get('ok'):
@@ -280,8 +272,8 @@ def send_to_group_with_flag(chat_id, text):
         send_message(chat_id, "❌ خطا در ارسال به گروه.")
 
 # ═══════════════════════════════════════════
-#  ✨ دستورات ادمین (پشتیبان)
-# ═══════════════════════════════════════════
+#  دستورات ادمین
+# ══════════════════════════════════════════
 def admin_set_price(chat_id, text):
     if not is_admin(chat_id):
         send_message(chat_id, "❌ دسترسی ادمین ندارید!")
@@ -307,7 +299,7 @@ def admin_give_equipment(chat_id, text):
         return
     parts = text.split()
     if len(parts) != 4:
-        send_message(chat_id, "❌ فرمت اشتباه!\n\n*مثال:* `دادن_تجهیزات 123456789 tank 5`\n\n(شناسه کاربر، نام تجهیز، تعداد)")
+        send_message(chat_id, "❌ فرمت اشتباه!\n\n*مثال:* `دادن_تجهیزات 123456789 tank 5`")
         return
     target_id, eq_key, count = parts[1], parts[2], parts[3]
     try:
@@ -329,7 +321,7 @@ def admin_give_equipment(chat_id, text):
 
 def admin_set_budget(chat_id, text):
     if not is_admin(chat_id):
-        send_message(chat_id, "❌ دسترسی ادمین ندارید!")
+        send_message(chat_id, " دسترسی ادمین ندارید!")
         return
     parts = text.split()
     if len(parts) != 3:
@@ -386,11 +378,7 @@ def admin_show_users(chat_id):
         msg += f"🆔 `{row[0]}` | {c_name} | 💰{row[2]} | 🏆{row[3]}\n"
     send_message(chat_id, msg)
 
-# ═══════════════════════════════════════════
-#  ✨ تابع کمکی برای تشخیص دستورات ادمین
-# ═══════════════════════════════════════════
 def is_admin_command(text):
-    """بررسی اینکه آیا پیام یک دستور ادمین است"""
     admin_commands = ['تنظیم_قیمت', 'دادن_تجهیزات', 'تنظیم_بودجه', 'حذف_کاربر', 'لیست_کاربران',
                       '/setprice', '/giveequipment', '/setbudget', '/deleteuser', '/users']
     for cmd in admin_commands:
@@ -404,6 +392,7 @@ def is_admin_command(text):
 def main():
     print("🎮 ربات جنگ جهانی در حال اجراست...")
     print(f"🔑 ادمین‌ها: {ADMIN_IDS}")
+    print(f" گروه: {GROUP_CHAT_ID}")
     last_update_id = None
     
     while True:
@@ -422,11 +411,10 @@ def main():
                             text = update['message'].get('text', '').strip()
                             user = get_user(chat_id)
                             
-                            # ──── دستورات عمومی ────
                             if text in ['/start', 'شروع', 'استارت']:
-                                msg = "🌍 *به بازی جنگ جهانی خوش آمدید!*\n\n📌 *دستورات:*\n"
+                                msg = "🌍 *به بازی جنگ جهانی خوش آمدید!*\n\n *دستورات:*\n"
                                 msg += "🎮 `شروع` : انتخاب کشور\n🏪 `فروشگاه` : خرید\n⚔️ `حمله` : نبرد\n"
-                                msg += "💰 `روزانه` : بودجه رایگان\n👤 `پروفایل` : آمار\n🏆 `رتبه‌بندی` : برترین‌ها\n"
+                                msg += "💰 `روزانه` : بودجه رایگان\n `پروفایل` : آمار\n `رتبه‌بندی` : برترین‌ها\n"
                                 msg += "📚 `آموزش` : راهنما\n🚨 `استعفا` : حذف کشور\n\n"
                                 if is_admin(chat_id):
                                     msg += "🔧 *دستورات ادمین:*\n"
@@ -464,7 +452,7 @@ def main():
                                     send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.")
                                     continue
                                 c_name = COUNTRIES[user['country']]['name']
-                                send_message(chat_id, f"👤 *پروفایل*\n\n🏳️ {c_name}\n🎖️ سطح: {user['level']} (XP: {user['xp']}/{user['level'] * 100})\n💰 {user['budget']}\n🏆 {user['wins']} | 💀 {user['losses']}")
+                                send_message(chat_id, f" *پروفایل*\n\n🏳️ {c_name}\n🎖️ سطح: {user['level']} (XP: {user['xp']}/{user['level'] * 100})\n💰 {user['budget']}\n {user['wins']} | 💀 {user['losses']}")
                             
                             elif text in ['/leaderboard', 'رتبه‌بندی', 'جدول']:
                                 cursor = conn.cursor()
@@ -475,12 +463,12 @@ def main():
                                     msg = "🏆 *جدول برترین‌ها*\n\n"
                                     for i, row in enumerate(rows, 1):
                                         c_name = COUNTRIES.get(row[0], {"name": "نامشخص"})["name"]
-                                        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "🔹"
+                                        medal = "" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "🔹"
                                         msg += f"{medal} {c_name} | 🎖️{row[1]} | 🏆{row[2]}\n"
                                     send_message(chat_id, msg)
                             
                             elif text in ['/help', 'آموزش', 'راهنما']:
-                                send_message(chat_id, "📚 *راهنما*\n\n۱. «شروع» → انتخاب کشور\n۲. «فروشگاه» → خرید\n۳. «حمله» → نبرد\n۴. «روزانه» → بودجه\n۵. پیام عادی → ارسال به گروه\n\n🚨 «استعفا» → پاک شدن همه‌چیز!")
+                                send_message(chat_id, "📚 *راهنما*\n\n. «شروع» → انتخاب کشور\n۲. «فروشگاه» → خرید\n۳. «حمله» → نبرد\n۴. «روزانه» → بودجه\n۵. پیام عادی → ارسال به گروه\n\n🚨 «استعفا» → پاک شدن همه‌چیز!")
                             
                             elif text in ['/resign', 'استعفا', 'حذف کشور', 'ترک کشور']:
                                 if not user or not user['country']:
@@ -488,14 +476,13 @@ def main():
                                     continue
                                 old_country = COUNTRIES[user['country']]['name']
                                 reset_user_country(chat_id)
-                                send_message(chat_id, f"🚨 *استعفا ثبت شد!*\n\nکشور {old_country} ترک شد.\n⚠️ همه‌چیز پاک شد.\n\n«شروع» را بزنید.")
+                                send_message(chat_id, f" *استعفا ثبت شد!*\n\nکشور {old_country} ترک شد.\n⚠️ همه‌چیز پاک شد.\n\n«شروع» را بزنید.")
                             
                             elif text in ['/testgroup', 'تست گروه']:
                                 result = send_message(GROUP_CHAT_ID, "✅ *تست*\nربات متصل است!")
                                 if result and result.get('ok'): send_message(chat_id, "✅ متصل است.")
                                 else: send_message(chat_id, "❌ خطا. ربات را ادمین کنید.")
                             
-                            # ✨ ✨ ✨ دستورات ادمین (قبل از ارسال به گروه بررسی می‌شوند) ✨ ✨ ✨
                             elif is_admin_command(text):
                                 if text.startswith('تنظیم_قیمت') or text.startswith('/setprice'):
                                     admin_set_price(chat_id, text)
@@ -508,7 +495,6 @@ def main():
                                 elif text in ['لیست_کاربران', '/users']:
                                     admin_show_users(chat_id)
                             
-                            # ✨ ارسال پیام عادی به گروه (فقط اگر دستور ادمین نباشد)
                             elif not text.startswith('/') and not is_admin_command(text) and user and user['country']:
                                 send_to_group_with_flag(chat_id, text)
                         
@@ -538,7 +524,7 @@ def main():
                                 for k in user['equipment']: user['equipment'][k] = 0
                                 user['budget'] += int(total_refund * 0.7)
                                 save_user(user)
-                                send_message(chat_id, f"🗑️ فروخته شد. بازگشت: {int(total_refund * 0.7)}")
+                                send_message(chat_id, f"️ فروخته شد. بازگشت: {int(total_refund * 0.7)}")
                                 show_shop(chat_id)
                             elif data == "ready_fight" and user:
                                 if any(v > 0 for v in user['equipment'].values()): send_message(chat_id, "✅ آماده! «حمله» را بزنید.")
