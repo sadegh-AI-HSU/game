@@ -14,20 +14,175 @@ ADMIN_IDS = [int(x.strip()) for x in ADMIN_IDS_STR.split(",") if x.strip().isdig
 GROUP_CHAT_ID = int(os.getenv("GROUP_CHAT_ID", "5752220430"))
 BASE_URL = f"https://tapi.bale.ai/bot{TOKEN}/"
 
+# ✨ دیکشنری برای ذخیره حالت کاربران (در انتظار ورود عدد)
+user_states = {}  # {chat_id: "waiting_for_coins"}
+
 # ═══════════════════════════════════════════
 #  داده‌های بازی
 # ═══════════════════════════════════════════
 COUNTRIES = {
+    # --- خاورمیانه و شمال آفریقا (اصلاح شده و دقیق) ---
     "iran": {"name": "ایران", "budget": 900, "bonus": "missile", "bonus_val": 1.4, "flag": "🇮🇷"},
     "turkey": {"name": "ترکیه", "budget": 880, "bonus": "drone", "bonus_val": 1.35, "flag": "🇹🇷"},
     "israel": {"name": "اسرائیل", "budget": 900, "bonus": "defense", "bonus_val": 1.4, "flag": "🇮🇱"},
     "palestine": {"name": "فلسطین", "budget": 350, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇵🇸"},
+    "egypt": {"name": "مصر", "budget": 860, "bonus": "tank", "bonus_val": 1.3, "flag": "🇪🇬"},
+    "saudi": {"name": "عربستان", "budget": 810, "bonus": "air", "bonus_val": 1.3, "flag": "🇸🇦"},
+    "uae": {"name": "امارات", "budget": 800, "bonus": "drone", "bonus_val": 1.3, "flag": "🇦🇪"},
+    "iraq": {"name": "عراق", "budget": 560, "bonus": "soldier", "bonus_val": 1.2, "flag": "🇮🇶"},
+    "syria": {"name": "سوریه", "budget": 430, "bonus": "missile", "bonus_val": 1.2, "flag": "🇸🇾"},
+    "lebanon": {"name": "لبنان", "budget": 380, "bonus": "missile", "bonus_val": 1.15, "flag": "🇱🇧"},
+    "jordan": {"name": "اردن", "budget": 420, "bonus": "air", "bonus_val": 1.2, "flag": "🇯🇴"},
+    "yemen": {"name": "یمن", "budget": 370, "bonus": "missile", "bonus_val": 1.15, "flag": "🇾🇪"},
+    "oman": {"name": "عمان", "budget": 360, "bonus": "ship", "bonus_val": 1.15, "flag": "🇴🇲"},
+    "qatar": {"name": "قطر", "budget": 350, "bonus": "air", "bonus_val": 1.15, "flag": "🇶🇦"},
+    "kuwait": {"name": "کویت", "budget": 340, "bonus": "air", "bonus_val": 1.15, "flag": "🇰🇼"},
+    "libya": {"name": "لیبی", "budget": 350, "bonus": "tank", "bonus_val": 1.15, "flag": "🇱🇾"},
+    "tunisia": {"name": "تونس", "budget": 340, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇳"},
+    "algeria": {"name": "الجزایر", "budget": 750, "bonus": "missile", "bonus_val": 1.25, "flag": "🇩🇿"},
+    "morocco": {"name": "مراکش", "budget": 630, "bonus": "drone", "bonus_val": 1.25, "flag": "🇲🇦"},
+    
+    # --- سایر کشورها (پرچم‌ها بررسی و تایید شدند) ---
     "usa": {"name": "آمریکا", "budget": 1000, "bonus": "air", "bonus_val": 1.4, "flag": "🇺🇸"},
     "russia": {"name": "روسیه", "budget": 980, "bonus": "tank", "bonus_val": 1.4, "flag": "🇷🇺"},
     "china": {"name": "چین", "budget": 970, "bonus": "soldier", "bonus_val": 1.35, "flag": "🇨🇳"},
+    "india": {"name": "هند", "budget": 950, "bonus": "missile", "bonus_val": 1.35, "flag": "🇮🇳"},
     "uk": {"name": "انگلستان", "budget": 940, "bonus": "ship", "bonus_val": 1.35, "flag": "🇬🇧"},
     "france": {"name": "فرانسه", "budget": 930, "bonus": "air", "bonus_val": 1.35, "flag": "🇫🇷"},
+    "japan": {"name": "ژاپن", "budget": 920, "bonus": "ship", "bonus_val": 1.35, "flag": "🇯🇵"},
+    "skorea": {"name": "کره جنوبی", "budget": 910, "bonus": "drone", "bonus_val": 1.35, "flag": "🇰🇷"},
     "germany": {"name": "آلمان", "budget": 890, "bonus": "tank", "bonus_val": 1.3, "flag": "🇩🇪"},
+    "italy": {"name": "ایتالیا", "budget": 870, "bonus": "ship", "bonus_val": 1.3, "flag": "🇮🇹"},
+    "pakistan": {"name": "پاکستان", "budget": 850, "bonus": "missile", "bonus_val": 1.3, "flag": "🇵🇰"},
+    "brazil": {"name": "برزیل", "budget": 840, "bonus": "soldier", "bonus_val": 1.3, "flag": "🇧🇷"},
+    "australia": {"name": "استرالیا", "budget": 830, "bonus": "air", "bonus_val": 1.3, "flag": "🇦🇺"},
+    "canada": {"name": "کانادا", "budget": 820, "bonus": "defense", "bonus_val": 1.3, "flag": "🇨🇦"},
+    "spain": {"name": "اسپانیا", "budget": 790, "bonus": "ship", "bonus_val": 1.25, "flag": "🇪🇸"},
+    "indonesia": {"name": "اندونزی", "budget": 780, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇮🇩"},
+    "poland": {"name": "لهستان", "budget": 770, "bonus": "tank", "bonus_val": 1.25, "flag": "🇵🇱"},
+    "ukraine": {"name": "اوکراین", "budget": 760, "bonus": "drone", "bonus_val": 1.3, "flag": "🇺🇦"},
+    "argentina": {"name": "آرژانتین", "budget": 740, "bonus": "ship", "bonus_val": 1.25, "flag": "🇦🇷"},
+    "mexico": {"name": "مکزیک", "budget": 730, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇲🇽"},
+    "southafrica": {"name": "آفریقای جنوبی", "budget": 720, "bonus": "tank", "bonus_val": 1.25, "flag": "🇿🇦"},
+    "netherlands": {"name": "هلند", "budget": 710, "bonus": "ship", "bonus_val": 1.25, "flag": "🇳🇱"},
+    "greece": {"name": "یونان", "budget": 700, "bonus": "air", "bonus_val": 1.25, "flag": "🇬🇷"},
+    "vietnam": {"name": "ویتنام", "budget": 690, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇻🇳"},
+    "thailand": {"name": "تایلند", "budget": 680, "bonus": "ship", "bonus_val": 1.25, "flag": "🇹🇭"},
+    "malaysia": {"name": "مالزی", "budget": 670, "bonus": "air", "bonus_val": 1.25, "flag": "🇲🇾"},
+    "philippines": {"name": "فیلیپین", "budget": 660, "bonus": "ship", "bonus_val": 1.25, "flag": "🇵🇭"},
+    "colombia": {"name": "کلمبیا", "budget": 650, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇨🇴"},
+    "nigeria": {"name": "نیجریه", "budget": 640, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇳🇬"},
+    "sweden": {"name": "سوئد", "budget": 620, "bonus": "air", "bonus_val": 1.25, "flag": "🇸🇪"},
+    "switzerland": {"name": "سوئیس", "budget": 610, "bonus": "defense", "bonus_val": 1.3, "flag": "🇨🇭"},
+    "singapore": {"name": "سنگاپور", "budget": 600, "bonus": "ship", "bonus_val": 1.25, "flag": "🇸🇬"},
+    "romania": {"name": "رومانی", "budget": 590, "bonus": "tank", "bonus_val": 1.2, "flag": "🇷🇴"},
+    "chile": {"name": "شیلی", "budget": 580, "bonus": "ship", "bonus_val": 1.2, "flag": "🇨🇱"},
+    "finland": {"name": "فنلاند", "budget": 570, "bonus": "air", "bonus_val": 1.2, "flag": "🇫🇮"},
+    "newzealand": {"name": "نیوزیلند", "budget": 550, "bonus": "ship", "bonus_val": 1.2, "flag": "🇳🇿"},
+    "peru": {"name": "پرو", "budget": 540, "bonus": "soldier", "bonus_val": 1.2, "flag": "🇵🇪"},
+    "venezuela": {"name": "ونزوئلا", "budget": 530, "bonus": "missile", "bonus_val": 1.2, "flag": "🇻🇪"},
+    "czechia": {"name": "چک", "budget": 520, "bonus": "tank", "bonus_val": 1.2, "flag": "🇨🇿"},
+    "bangladesh": {"name": "بنگلادش", "budget": 510, "bonus": "soldier", "bonus_val": 1.2, "flag": "🇧🇩"},
+    "hungary": {"name": "مجارستان", "budget": 500, "bonus": "tank", "bonus_val": 1.2, "flag": "🇭🇺"},
+    "belgium": {"name": "بلژیک", "budget": 490, "bonus": "air", "bonus_val": 1.2, "flag": "🇧🇪"},
+    "austria": {"name": "اتریش", "budget": 480, "bonus": "defense", "bonus_val": 1.2, "flag": "🇦🇹"},
+    "norway": {"name": "نروژ", "budget": 470, "bonus": "ship", "bonus_val": 1.2, "flag": "🇳🇴"},
+    "denmark": {"name": "دانمارک", "budget": 460, "bonus": "air", "bonus_val": 1.2, "flag": "🇩🇰"},
+    "portugal": {"name": "پرتغال", "budget": 440, "bonus": "ship", "bonus_val": 1.2, "flag": "🇵🇹"},
+    "serbia": {"name": "صربستان", "budget": 410, "bonus": "tank", "bonus_val": 1.2, "flag": "🇷🇸"},
+    "azerbaijan": {"name": "آذربایجان", "budget": 400, "bonus": "drone", "bonus_val": 1.25, "flag": "🇦🇿"},
+    "afghanistan": {"name": "افغانستان", "budget": 390, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇦🇫"},
+    "georgia": {"name": "گرجستان", "budget": 330, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇪"},
+    "armenia": {"name": "ارمنستان", "budget": 320, "bonus": "defense", "bonus_val": 1.15, "flag": "🇦🇲"},
+    "kazakhstan": {"name": "قزاقستان", "budget": 310, "bonus": "tank", "bonus_val": 1.15, "flag": "🇰🇿"},
+    "uzbekistan": {"name": "ازبکستان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇺🇿"},
+    "mongolia": {"name": "مغولستان", "budget": 300, "bonus": "tank", "bonus_val": 1.15, "flag": "🇲🇳"},
+    "cuba": {"name": "کوبا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇨🇺"},
+    "bolivia": {"name": "بولیوی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇴"},
+    "paraguay": {"name": "پاراگوئه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇵🇾"},
+    "uruguay": {"name": "اروگوئه", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇺🇾"},
+    "ecuador": {"name": "اکوادور", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇪🇨"},
+    "guatemala": {"name": "گواتمالا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇹"},
+    "costarica": {"name": "کاستاریکا", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇨🇷"},
+    "panama": {"name": "پاناما", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇵🇦"},
+    "jamaica": {"name": "جامائیکا", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇯🇲"},
+    "trinidad": {"name": "ترینیداد", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇹🇹"},
+    "bahamas": {"name": "باهاما", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇧🇸"},
+    "croatia": {"name": "کرواسی", "budget": 350, "bonus": "ship", "bonus_val": 1.15, "flag": "🇭🇷"},
+    "bulgaria": {"name": "بلغارستان", "budget": 340, "bonus": "tank", "bonus_val": 1.15, "flag": "🇧🇬"},
+    "slovakia": {"name": "اسلواکی", "budget": 330, "bonus": "tank", "bonus_val": 1.15, "flag": "🇸🇰"},
+    "lithuania": {"name": "لیتوانی", "budget": 320, "bonus": "air", "bonus_val": 1.15, "flag": "🇱🇹"},
+    "latvia": {"name": "لتونی", "budget": 310, "bonus": "air", "bonus_val": 1.15, "flag": "🇱🇻"},
+    "estonia": {"name": "استونی", "budget": 300, "bonus": "cyber", "bonus_val": 1.15, "flag": "🇪🇪"},
+    "belarus": {"name": "بلاروس", "budget": 350, "bonus": "missile", "bonus_val": 1.15, "flag": "🇧🇾"},
+    "moldova": {"name": "مولداوی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇩"},
+    "cyprus": {"name": "قبرس", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇨🇾"},
+    "malta": {"name": "مالت", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇹"},
+    "iceland": {"name": "ایسلند", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇮🇸"},
+    "luxembourg": {"name": "لوکزامبورگ", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇱🇺"},
+    "ireland": {"name": "ایرلند", "budget": 350, "bonus": "air", "bonus_val": 1.15, "flag": "🇮🇪"},
+    "sudan": {"name": "سودان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇩"},
+    "ethiopia": {"name": "اتیوپی", "budget": 350, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇪🇹"},
+    "kenya": {"name": "کنیا", "budget": 320, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇰🇪"},
+    "ghana": {"name": "غنا", "budget": 310, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇭"},
+    "senegal": {"name": "سنگال", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇳"},
+    "tanzania": {"name": "تانزانیا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇿"},
+    "uganda": {"name": "اوگاندا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇺🇬"},
+    "zambia": {"name": "زامبیا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇿🇲"},
+    "zimbabwe": {"name": "زیمبابوه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇿🇼"},
+    "angola": {"name": "آنگولا", "budget": 320, "bonus": "missile", "bonus_val": 1.15, "flag": "🇦🇴"},
+    "mozambique": {"name": "موزامبیک", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇿"},
+    "madagascar": {"name": "ماداگاسکار", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇬"},
+    "cameroon": {"name": "کامرون", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇨🇲"},
+    "ivorycoast": {"name": "ساحل عاج", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇨🇮"},
+    "mali": {"name": "مالی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇱"},
+    "burkina": {"name": "بورکینافاسو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇫"},
+    "niger": {"name": "نیجر", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇳🇪"},
+    "chad": {"name": "چاد", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇩"},
+    "somalia": {"name": "سومالی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇴"},
+    "rwanda": {"name": "رواندا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇷🇼"},
+    "nepal": {"name": "نپال", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇳🇵"},
+    "srilanka": {"name": "سریلانکا", "budget": 320, "bonus": "ship", "bonus_val": 1.15, "flag": "🇱🇰"},
+    "myanmar": {"name": "میانمار", "budget": 330, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇲"},
+    "cambodia": {"name": "کامبوج", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇰🇭"},
+    "laos": {"name": "لائوس", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇱🇦"},
+    "brunei": {"name": "برونئی", "budget": 350, "bonus": "ship", "bonus_val": 1.15, "flag": "🇧🇳"},
+    "papua": {"name": "پاپوآ گینه نو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇵🇬"},
+    "fiji": {"name": "فیجی", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇫🇯"},
+    "solomon": {"name": "جزایر سلیمان", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇸🇧"},
+    "vanuatu": {"name": "وانواتو", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇻🇺"},
+    "samoa": {"name": "ساموآ", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇼🇸"},
+    "kiribati": {"name": "کیریباتی", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇰🇮"},
+    "tonga": {"name": "تونگا", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇹🇴"},
+    "seychelles": {"name": "سیشل", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇸🇨"},
+    "mauritius": {"name": "موریس", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇺"},
+    "maldives": {"name": "مالدیو", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇻"},
+    "bhutan": {"name": "بوتان", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇧🇹"},
+    "tajikistan": {"name": "تاجیکستان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇯"},
+    "kyrgyzstan": {"name": "قرقیزستان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇰🇬"},
+    "turkmenistan": {"name": "ترکمنستان", "budget": 300, "bonus": "missile", "bonus_val": 1.15, "flag": "🇹🇲"},
+    "northkorea": {"name": "کره شمالی", "budget": 400, "bonus": "missile", "bonus_val": 1.3, "flag": "🇰🇵"},
+    "haiti": {"name": "هائیتی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇭🇹"},
+    "honduras": {"name": "هندوراس", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇭🇳"},
+    "elsalvador": {"name": "السالوادور", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇻"},
+    "nicaragua": {"name": "نیکاراگوئه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇳🇮"},
+    "dominican": {"name": "جمهوری دومینیکن", "budget": 320, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇩🇴"},
+    "albania": {"name": "آلبانی", "budget": 310, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇦🇱"},
+    "macedonia": {"name": "مقدونیه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇰"},
+    "bosnia": {"name": "بوسنی", "budget": 310, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇦"},
+    "kosovo": {"name": "کوزوو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇽🇰"},
+    "montenegro": {"name": "مونته‌نگرو", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇪"},
+    "andorra": {"name": "آندورا", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇦🇩"},
+    "monaco": {"name": "موناکو", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇲🇨"},
+    "sanmarino": {"name": "سان مارینو", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇸🇲"},
+    "vatican": {"name": "واتیکان", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇻🇦"},
+    "mauritania": {"name": "موریتانی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇷"},
+    "gambia": {"name": "گامبیا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇲"},
+    "guinea": {"name": "گینه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇳"},
+    "liberia": {"name": "لیبریا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇱🇷"},
+    "sierraleone": {"name": "سیرالئون", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇱"},
+    "togo": {"name": "توگو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇬"},
+    "benin": {"name": "بنین", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇯"},
 }
 
 EQUIPMENT = {
@@ -319,12 +474,33 @@ def handle_callback(chat_id, data, cb_id):
     if data == "menu_main":
         send_message(chat_id, "🌍 *به بازی جنگ جهانی خوش آمدید!*\n\nاز منوی زیر بخش مورد نظر را انتخاب کنید:", reply_markup=main_menu_kb(is_admin_user=admin_user))
 
+    # ✨ ✨ ✨ سیستم خرید سکه خودکار ✨ ✨ ✨
     elif data == "buy_coins":
         if not user or not user['country']:
             send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
             return
-        msg = f"💎 *خرید سکه از پشتیبان*\n\n🆔 *شناسه شما:* `{chat_id}`\n💰 *بودجه فعلی:* {user['budget']} سکه\n\nبرای خرید، این شناسه و مقدار مورد نظر را برای پشتیبان ارسال کنید."
-        send_message(chat_id, msg, reply_markup={"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_main"}]]})
+        
+        # تنظیم حالت کاربر
+        user_states[chat_id] = "waiting_for_coins"
+        
+        msg = (
+            "💎 *درخواست خرید سکه*\n\n"
+            "لطفاً *مقدار سکه* مورد نظر خود را به صورت عدد وارد کنید.\n\n"
+            "مثال: `1000` یا `5000`\n\n"
+            "پس از وارد کردن عدد، درخواست شما به صورت خودکار برای پشتیبان ارسال می‌شود.\n\n"
+            f"💰 *بودجه فعلی شما:* {user['budget']} سکه"
+        )
+        
+        kb = {"inline_keyboard": [
+            [{"text": "❌ لغو", "callback_data": "cancel_buy_coins"}]
+        ]}
+        
+        send_message(chat_id, msg, reply_markup=kb)
+
+    elif data == "cancel_buy_coins":
+        if chat_id in user_states:
+            del user_states[chat_id]
+        send_message(chat_id, "❌ درخواست خرید سکه لغو شد.", reply_markup=main_menu_kb())
 
     elif data == "resign_confirm":
         if not user or not user['country']:
@@ -624,7 +800,7 @@ def handle_callback(chat_id, data, cb_id):
 #  حلقه اصلی ربات
 # ═══════════════════════════════════════════
 def main():
-    print("🎮 ربات جنگ جهانی (نسخه نهایی) در حال اجراست...")
+    print("🎮 ربات جنگ جهانی (نسخه نهایی با خرید سکه خودکار) در حال اجراست...")
     last_update_id = None
     
     while True:
@@ -648,6 +824,52 @@ def main():
                             user = get_user(chat_id)
                             admin_user = is_admin(chat_id)
                             
+                            # ✨ ✨ ✨ بررسی حالت کاربر (در انتظار ورود عدد برای خرید سکه) ✨ ✨ ✨
+                            if chat_id in user_states and user_states[chat_id] == "waiting_for_coins":
+                                # تلاش برای تبدیل متن به عدد
+                                try:
+                                    coins_amount = int(text)
+                                    
+                                    if coins_amount <= 0:
+                                        send_message(chat_id, "❌ لطفاً یک عدد مثبت وارد کنید.", reply_markup={"inline_keyboard": [[{"text": "❌ لغو", "callback_data": "cancel_buy_coins"}]]})
+                                        continue
+                                    
+                                    # حذف حالت کاربر
+                                    del user_states[chat_id]
+                                    
+                                    # ارسال درخواست به تمام ادمین‌ها
+                                    for admin_id in ADMIN_IDS:
+                                        admin_msg = (
+                                            f"🔔 *درخواست خرید سکه جدید*\n\n"
+                                            f"👤 *شناسه کاربر:* `{chat_id}`\n"
+                                            f"💎 *مقدار درخواستی:* {coins_amount} سکه\n"
+                                            f"💰 *بودجه فعلی کاربر:* {user['budget']} سکه\n\n"
+                                            f"برای تایید و اضافه کردن سکه، از دستور زیر استفاده کنید:\n"
+                                            f"`add_money {chat_id} {coins_amount}`"
+                                        )
+                                        send_message(admin_id, admin_msg)
+                                    
+                                    # تایید به کاربر
+                                    send_message(
+                                        chat_id, 
+                                        f"✅ *درخواست شما ثبت شد!*\n\n"
+                                        f"💎 *مقدار درخواستی:* {coins_amount} سکه\n\n"
+                                        f"پشتیبان به زودی درخواست شما را بررسی می‌کند.\n"
+                                        f"پس از تایید، سکه‌ها به حساب شما اضافه خواهند شد.",
+                                        reply_markup=main_menu_kb()
+                                    )
+                                    
+                                except ValueError:
+                                    # اگر عدد نباشد
+                                    send_message(
+                                        chat_id, 
+                                        "❌ *خطا:* لطفاً فقط یک عدد وارد کنید.\n\n"
+                                        "مثال: `1000` یا `5000`",
+                                        reply_markup={"inline_keyboard": [[{"text": "❌ لغو", "callback_data": "cancel_buy_coins"}]]}
+                                    )
+                                continue
+                            
+                            # ادامه پردازش‌های عادی
                             if text.startswith("اتحادیه "):
                                 if not user or not user['country']:
                                     send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.")
