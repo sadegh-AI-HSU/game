@@ -183,7 +183,6 @@ COUNTRIES = {
     "togo": {"name": "توگو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇬"},
     "benin": {"name": "بنین", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇯"},
 }
-
 EQUIPMENT = {
     "tank": {"name": "تانک", "price": 80, "attack": 15, "defense": 20, "emoji": "🛡️"},
     "jet": {"name": "جنگنده", "price": 120, "attack": 25, "defense": 10, "emoji": "✈️"},
