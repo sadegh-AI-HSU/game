@@ -51,6 +51,7 @@ RESOURCES = {
 def init_db():
     conn = sqlite3.connect('war_game.db', check_same_thread=False)
     cursor = conn.cursor()
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             chat_id INTEGER PRIMARY KEY, country TEXT, budget INTEGER,
@@ -59,6 +60,7 @@ def init_db():
             alliance TEXT DEFAULT 'بدون اتحادیه', inventory TEXT DEFAULT '{}'
         )
     ''')
+    
     cursor.execute("PRAGMA table_info(users)")
     columns = [col[1] for col in cursor.fetchall()]
     if 'alliance' not in columns: cursor.execute("ALTER TABLE users ADD COLUMN alliance TEXT DEFAULT 'بدون اتحادیه'")
@@ -73,8 +75,18 @@ def init_db():
     cursor.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)')
     cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('war_enabled', 'true')")
     
-    # جدول کانال‌ها/گروه‌های اجباری
-    cursor.execute('CREATE TABLE IF NOT EXISTS forced_chats (chat_id TEXT PRIMARY KEY, title TEXT, type TEXT)')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS forced_chats (
+            chat_id TEXT PRIMARY KEY, 
+            title TEXT, 
+            type TEXT,
+            invite_link TEXT
+        )
+    ''')
+    cursor.execute("PRAGMA table_info(forced_chats)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if 'invite_link' not in columns:
+        cursor.execute("ALTER TABLE forced_chats ADD COLUMN invite_link TEXT")
     
     conn.commit()
     return conn
@@ -139,8 +151,19 @@ def set_equipment_price(eq_key, new_price):
     conn.commit()
 
 def add_forced_chat(chat_id, title, chat_type):
+    invite_link = None
+    try:
+        res = requests.post(f"{BASE_URL}exportChatInviteLink", json={'chat_id': str(chat_id)}, timeout=10).json()
+        if res.get('ok'):
+            invite_link = res['result']
+    except Exception as e:
+        print(f"خطا در دریافت لینک دعوت: {e}")
+    
     cursor = conn.cursor()
-    cursor.execute("INSERT OR REPLACE INTO forced_chats (chat_id, title, type) VALUES (?, ?, ?)", (str(chat_id), title, chat_type))
+    cursor.execute('''
+        INSERT OR REPLACE INTO forced_chats (chat_id, title, type, invite_link) 
+        VALUES (?, ?, ?, ?)
+    ''', (str(chat_id), title, chat_type, invite_link))
     conn.commit()
 
 def remove_forced_chat(chat_id):
@@ -150,39 +173,29 @@ def remove_forced_chat(chat_id):
 
 def get_forced_chats():
     cursor = conn.cursor()
-    cursor.execute("SELECT chat_id, title, type FROM forced_chats")
+    cursor.execute("SELECT chat_id, title, type, invite_link FROM forced_chats")
     return cursor.fetchall()
 
-# ═══════════════════════════════════════════
-#  ✨ بررسی عضویت (اصلاح‌شده و تضمینی)
-# ═══════════════════════════════════════════
 def check_user_membership(user_id):
     chats = get_forced_chats()
     if not chats:
         return True, []
     
     not_member = []
-    for ch_id, ch_title, ch_type in chats:
+    for ch_id, ch_title, ch_type, invite_link in chats:
         try:
             payload = {'chat_id': ch_id, 'user_id': user_id}
             response = requests.post(f"{BASE_URL}getChatMember", json=payload, timeout=10)
             result = response.json()
-            
             if not result.get('ok'):
-                # اگر ربات ادمین نباشد، اینجا خطا می‌دهد. ما فرض را بر عدم عضویت می‌گذاریم تا کاربر مجبور شود
-                print(f"⚠️ خطای بررسی عضویت در {ch_title} (آیا ربات ادمین است؟): {result.get('description')}")
-                not_member.append((ch_id, ch_title, ch_type))
+                not_member.append((ch_id, ch_title, ch_type, invite_link))
                 continue
-                
             status = result['result'].get('status', '')
-            # وضعیت‌های مجاز: member, administrator, creator, restricted
-            # وضعیت‌های غیرمجاز: left, kicked
             if status in ['left', 'kicked']:
-                not_member.append((ch_id, ch_title, ch_type))
+                not_member.append((ch_id, ch_title, ch_type, invite_link))
         except Exception as e:
-            print(f"❌ خطای شبکه در بررسی {ch_id}: {e}")
-            not_member.append((ch_id, ch_title, ch_type))
-    
+            print(f"خطا در بررسی عضویت: {e}")
+            not_member.append((ch_id, ch_title, ch_type, invite_link))
     return len(not_member) == 0, not_member
 
 # ═══════════════════════════════════════════
@@ -193,7 +206,7 @@ def send_request(method, payload):
         response = requests.post(BASE_URL + method, json=payload, timeout=10)
         return response.json()
     except Exception as e:
-        print(f"❌ خطای شبکه: {e}")
+        print(f"خطای شبکه: {e}")
         return None
 
 def send_message(chat_id, text, reply_markup=None):
@@ -246,20 +259,36 @@ def admin_menu_kb():
 def show_join_required(chat_id, not_member_chats):
     text = "🔒 *عضویت اجباری*\n\n"
     text += "برای استفاده از ربات، ابتدا باید در کانال/گروه‌های زیر عضو شوید:\n\n"
+    
     kb = {"inline_keyboard": []}
     
-    for ch_id, ch_title, ch_type in not_member_chats:
+    for ch_id, ch_title, ch_type, invite_link in not_member_chats:
         chat_type_emoji = "📢" if ch_type == "channel" else "👥"
-        # تلاش برای ساخت لینک اگر نام کاربری داشته باشد
-        link_text = ch_title.lstrip('@')
-        if link_text and not link_text.startswith('-100'): # اگر نام کاربری باشد نه آیدی عددی
-            url = f"https://ble.ir/{link_text}"
-        else:
-            url = f"https://ble.ir/" # لینک پیش‌فرض اگر آیدی عددی باشد
-            
-        kb["inline_keyboard"].append([{"text": f"{chat_type_emoji} عضویت در {ch_title}", "url": url}])
         
-    kb["inline_keyboard"].append([{"text": "✅ بررسی مجدد عضویت", "callback_data": "check_membership"}])
+        if invite_link:
+            join_url = invite_link
+        else:
+            username = ch_title.lstrip('@')
+            if username and not username.startswith('-100'):
+                join_url = f"https://ble.ir/{username}"
+            else:
+                join_url = None
+        
+        if join_url:
+            kb["inline_keyboard"].append([
+                {"text": f"{chat_type_emoji} عضویت در {ch_title}", "url": join_url}
+            ])
+            text += f"{chat_type_emoji} *{ch_title}*\n🔗 [کلیک برای عضویت]({join_url})\n\n"
+        else:
+            kb["inline_keyboard"].append([
+                {"text": f"{chat_type_emoji} {ch_title} (لینک موجود نیست)", "callback_data": "no_link"}
+            ])
+            text += f"{chat_type_emoji} *{ch_title}*\n⚠️ لینک در دسترس نیست\n\n"
+    
+    kb["inline_keyboard"].append([
+        {"text": "✅ بررسی مجدد عضویت", "callback_data": "check_membership"}
+    ])
+    
     send_message(chat_id, text, reply_markup=kb)
 
 # ═══════════════════════════════════════════
@@ -274,7 +303,6 @@ def handle_callback(chat_id, data, cb_id):
         send_message(chat_id, "🚫 *شما به عنوان پشتیبان، امکان بازی ندارید!*", reply_markup=main_menu_kb(is_admin_user=True))
         return
     
-    # بررسی عضویت اجباری قبل از هر اکشن بازی
     if not admin_user and data not in ["menu_main", "check_membership"] and data.startswith(("menu_", "action_", "buy_", "trade_", "attack_", "select_country", "lottery_", "buy_coins", "resign_")):
         is_member, not_member_chats = check_user_membership(chat_id)
         if not is_member:
@@ -284,59 +312,43 @@ def handle_callback(chat_id, data, cb_id):
     if data == "check_membership":
         is_member, not_member_chats = check_user_membership(chat_id)
         if is_member:
-            send_message(chat_id, "✅ *عضویت شما تایید شد!*\nحالا می‌توانید از تمام امکانات ربات استفاده کنید.", reply_markup=main_menu_kb())
+            send_message(chat_id, "✅ *عضویت شما تایید شد!*", reply_markup=main_menu_kb())
         else:
             show_join_required(chat_id, not_member_chats)
-            send_message(chat_id, "❌ شما هنوز در تمام کانال‌ها/گروه‌های اجباری عضو نشده‌اید.")
 
     if data == "menu_main":
-        msg = "🌍 *به بازی جنگ جهانی خوش آمدید!*\n\nاز منوی زیر بخش مورد نظر را انتخاب کنید:"
-        kb = main_menu_kb(is_admin_user=admin_user)
-        send_message(chat_id, msg, reply_markup=kb)
+        send_message(chat_id, "🌍 *به بازی جنگ جهانی خوش آمدید!*\n\nاز منوی زیر بخش مورد نظر را انتخاب کنید:", reply_markup=main_menu_kb(is_admin_user=admin_user))
 
     elif data == "buy_coins":
         if not user or not user['country']:
             send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
             return
-        msg = "💎 *خرید سکه از پشتیبان*\n\n"
-        msg += f"🆔 *شناسه شما:* `{chat_id}`\n"
-        msg += f"💰 *بودجه فعلی:* {user['budget']} سکه\n\n"
-        msg += "برای خرید، این شناسه و مقدار مورد نظر را برای پشتیبان ارسال کنید."
-        kb = {"inline_keyboard": [[{"text": "🔙 بازگشت به منو", "callback_data": "menu_main"}]]}
-        send_message(chat_id, msg, reply_markup=kb)
+        msg = f"💎 *خرید سکه از پشتیبان*\n\n🆔 *شناسه شما:* `{chat_id}`\n💰 *بودجه فعلی:* {user['budget']} سکه\n\nبرای خرید، این شناسه و مقدار مورد نظر را برای پشتیبان ارسال کنید."
+        send_message(chat_id, msg, reply_markup={"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_main"}]]})
 
     elif data == "resign_confirm":
         if not user or not user['country']:
             send_message(chat_id, "❌ شما کشوری ندارید!", reply_markup=main_menu_kb())
             return
         c_info = COUNTRIES[user['country']]
-        msg = f"🚨 *تایید انصراف از بازی*\n\nآیا مطمئن هستید که می‌خواهید از {c_info['flag']} {c_info['name']} انصراف دهید؟\n\n⚠️ *تمام اطلاعات شما پاک می‌شود!*"
-        kb = {"inline_keyboard": [
-            [{"text": "✅ بله، انصراف می‌دهم", "callback_data": "resign_confirm_yes"}],
-            [{"text": "❌ خیر، منصرف شدم", "callback_data": "menu_main"}]
-        ]}
+        msg = f"🚨 *تایید انصراف*\n\nآیا مطمئن هستید که می‌خواهید از {c_info['flag']} {c_info['name']} انصراف دهید؟\n\n⚠️ *تمام اطلاعات شما پاک می‌شود!*"
+        kb = {"inline_keyboard": [[{"text": "✅ بله، انصراف می‌دهم", "callback_data": "resign_confirm_yes"}], [{"text": "❌ خیر", "callback_data": "menu_main"}]]}
         send_message(chat_id, msg, reply_markup=kb)
 
     elif data == "resign_confirm_yes":
-        if not user or not user['country']:
-            send_message(chat_id, "❌ شما کشوری ندارید!", reply_markup=main_menu_kb())
-            return
+        if not user or not user['country']: return
         c_info = COUNTRIES[user['country']]
         reset_user_full(chat_id)
-        send_message(chat_id, f"✅ *انصراف شما ثبت شد!*\n\nشما از {c_info['flag']} {c_info['name']} خارج شدید.", reply_markup=main_menu_kb())
+        send_message(chat_id, f"✅ *انصراف ثبت شد!*\n\nشما از {c_info['flag']} {c_info['name']} خارج شدید.", reply_markup=main_menu_kb())
 
     elif data == "menu_profile":
         if not user or not user['country']:
-            send_message(chat_id, "❌ شما هنوز کشوری انتخاب نکرده‌اید!", reply_markup=main_menu_kb())
+            send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
             return
         c_info = COUNTRIES[user['country']]
         inv_text = "\n".join([f"• {RESOURCES[k]['emoji']} {RESOURCES[k]['name']}: {v}" for k, v in user['inventory'].items() if v > 0]) or "_(خالی)_"
-        msg = f"👤 *پروفایل فرمانده*\n\n🏳️ کشور: {c_info['flag']} {c_info['name']}\n🤝 اتحادیه: {user['alliance']}\n🎖️ سطح: {user['level']} (XP: {user['xp']}/{user['level']*100})\n💰 بودجه: {user['budget']}\n🏆 برد: {user['wins']} | 💀 باخت: {user['losses']}\n\n📦 *انبار منابع:*\n{inv_text}"
-        kb = {"inline_keyboard": [
-            [{"text": "💎 خرید سکه", "callback_data": "buy_coins"}],
-            [{"text": "🚪 انصراف از بازی", "callback_data": "resign_confirm"}],
-            [{"text": "🔙 بازگشت به منو", "callback_data": "menu_main"}]
-        ]}
+        msg = f"👤 *پروفایل فرمانده*\n\n🏳️ کشور: {c_info['flag']} {c_info['name']}\n🤝 اتحادیه: {user['alliance']}\n🎖️ سطح: {user['level']} (XP: {user['xp']}/{user['level']*100})\n💰 بودجه: {user['budget']}\n🏆 برد: {user['wins']} | 💀 باخت: {user['losses']}\n\n📦 *انبار:* {inv_text}"
+        kb = {"inline_keyboard": [[{"text": "💎 خرید سکه", "callback_data": "buy_coins"}], [{"text": "🚪 انصراف", "callback_data": "resign_confirm"}], [{"text": "🔙 بازگشت", "callback_data": "menu_main"}]]}
         send_message(chat_id, msg, reply_markup=kb)
 
     elif data == "menu_country":
@@ -362,31 +374,26 @@ def handle_callback(chat_id, data, cb_id):
 
     elif data.startswith("select_country:"):
         country_key = data.split(":")[1]
-        new_user = {"chat_id": chat_id, "country": country_key, "budget": COUNTRIES[country_key]['budget'], 
-                    "equipment": {}, "wins": 0, "losses": 0, "xp": 0, "level": 1, "last_daily": 0, 
-                    "alliance": "بدون اتحادیه", "inventory": {}}
+        new_user = {"chat_id": chat_id, "country": country_key, "budget": COUNTRIES[country_key]['budget'], "equipment": {}, "wins": 0, "losses": 0, "xp": 0, "level": 1, "last_daily": 0, "alliance": "بدون اتحادیه", "inventory": {}}
         save_user(new_user)
         c_info = COUNTRIES[country_key]
         send_message(chat_id, f"✅ {c_info['flag']} {c_info['name']} انتخاب شد!\n💰 بودجه: {COUNTRIES[country_key]['budget']}", reply_markup=main_menu_kb())
 
     elif data == "menu_shop":
-        if not user or not user['country']:
-            send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
-            return
+        if not user or not user['country']: return send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
         prices = get_equipment_prices()
         c_info = COUNTRIES[user['country']]
-        text = f"🏪 *فروشگاه تجهیزات*\n🏳️ کشور: {c_info['flag']} {c_info['name']}\n💰 بودجه شما: {user['budget']}\n\n"
+        text = f"🏪 *فروشگاه*\n🏳️ {c_info['flag']} {c_info['name']} | 💰 {user['budget']}\n\n"
         kb = {"inline_keyboard": []}
         for k, v in EQUIPMENT.items():
             text += f"{v['emoji']} {v['name']} | ⚔️{v['attack']} 🛡️{v['defense']} | 💰{prices[k]}\n"
-            kb["inline_keyboard"].append([{"text": f"خرید {v['emoji']} {v['name']} ({prices[k]})", "callback_data": f"buy_eq:{k}"}])
+            kb["inline_keyboard"].append([{"text": f"خرید {v['emoji']} {v['name']}", "callback_data": f"buy_eq:{k}"}])
         kb["inline_keyboard"].append([{"text": "🔙 بازگشت", "callback_data": "menu_main"}])
         send_message(chat_id, text, reply_markup=kb)
 
     elif data.startswith("buy_eq:"):
         eq_key = data.split(":")[1]
-        prices = get_equipment_prices()
-        price = prices[eq_key]
+        price = get_equipment_prices()[eq_key]
         if user['budget'] >= price:
             user['budget'] -= price
             user['equipment'][eq_key] = user['equipment'].get(eq_key, 0) + 1
@@ -396,26 +403,20 @@ def handle_callback(chat_id, data, cb_id):
             send_message(chat_id, "❌ بودجه کافی نیست!", reply_markup=main_menu_kb())
 
     elif data == "menu_inventory":
-        if not user or not user['country']:
-            send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
-            return
-        text = "📦 *انبار و تجارت منابع*\n\n"
+        if not user or not user['country']: return send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
+        text = "📦 *انبار و تجارت*\n\n"
         kb = {"inline_keyboard": []}
         for res_key, res_info in RESOURCES.items():
             amount = user['inventory'].get(res_key, 0)
             text += f"{res_info['emoji']} {res_info['name']}: {amount}\n   (خرید: 💰{res_info['buy_price']} | فروش: 💰{res_info['sell_price']})\n"
-            kb["inline_keyboard"].append([
-                {"text": f"خرید {res_info['emoji']} {res_info['name']}", "callback_data": f"trade_buy:{res_key}"},
-                {"text": f"فروش {res_info['emoji']} {res_info['name']}", "callback_data": f"trade_sell:{res_key}"}
-            ])
+            kb["inline_keyboard"].append([{"text": f"خرید {res_info['emoji']}", "callback_data": f"trade_buy:{res_key}"}, {"text": f"فروش {res_info['emoji']}", "callback_data": f"trade_sell:{res_key}"}])
         kb["inline_keyboard"].append([{"text": "🔙 بازگشت", "callback_data": "menu_main"}])
         send_message(chat_id, text, reply_markup=kb)
 
     elif data.startswith("trade_buy:"):
         res_key = data.split(":")[1]
-        price = RESOURCES[res_key]['buy_price']
-        if user['budget'] >= price:
-            user['budget'] -= price
+        if user['budget'] >= RESOURCES[res_key]['buy_price']:
+            user['budget'] -= RESOURCES[res_key]['buy_price']
             user['inventory'][res_key] = user['inventory'].get(res_key, 0) + 1
             save_user(user)
             send_message(chat_id, f"✅ {RESOURCES[res_key]['emoji']} {RESOURCES[res_key]['name']} خریداری شد.", reply_markup=main_menu_kb())
@@ -430,35 +431,29 @@ def handle_callback(chat_id, data, cb_id):
             save_user(user)
             send_message(chat_id, f"✅ {RESOURCES[res_key]['emoji']} {RESOURCES[res_key]['name']} فروخته شد.", reply_markup=main_menu_kb())
         else:
-            send_message(chat_id, "❌ این کالا را در انبار ندارید!", reply_markup=main_menu_kb())
+            send_message(chat_id, "❌ این کالا را ندارید!", reply_markup=main_menu_kb())
 
     elif data == "menu_war":
-        if get_setting('war_enabled') != 'true':
-            send_message(chat_id, "🚫 *جنگ جهانی متوقف شده است!*", reply_markup=main_menu_kb())
-            return
-        if not user or not user['country']:
-            send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
-            return
+        if get_setting('war_enabled') != 'true': return send_message(chat_id, "🚫 *جنگ متوقف شده است!*", reply_markup=main_menu_kb())
+        if not user or not user['country']: return send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
         cursor = conn.cursor()
         cursor.execute("SELECT chat_id, country, level FROM users WHERE country IS NOT NULL AND chat_id != ?", (chat_id,))
         targets = cursor.fetchall()
-        if not targets:
-            send_message(chat_id, "🌍 کشور دیگری برای حمله وجود ندارد!", reply_markup=main_menu_kb())
-            return
-        text = "⚔️ *انتخاب هدف برای حمله*"
+        if not targets: return send_message(chat_id, "🌍 کشور دیگری برای حمله وجود ندارد!", reply_markup=main_menu_kb())
+        
         kb = {"inline_keyboard": []}
         for t in targets:
             t_country = COUNTRIES[t[1]]
             kb["inline_keyboard"].append([{"text": f"⚔️ حمله به {t_country['flag']} {t_country['name']} (سطح {t[2]})", "callback_data": f"attack_confirm:{t[0]}"}])
         kb["inline_keyboard"].append([{"text": "🔙 بازگشت", "callback_data": "menu_main"}])
-        send_message(chat_id, text, reply_markup=kb)
+        send_message(chat_id, "⚔️ *انتخاب هدف برای حمله*", reply_markup=kb)
 
     elif data.startswith("attack_confirm:"):
         target_id = int(data.split(":")[1])
         target_user = get_user(target_id)
         if not target_user or not target_user['country']:
-            send_message(chat_id, "❌ این هدف دیگر معتبر نیست!", reply_markup=main_menu_kb())
-            return
+            return send_message(chat_id, "❌ این هدف معتبر نیست!", reply_markup=main_menu_kb())
+            
         p1_atk, p1_def = 0, 0
         for eq, count in user['equipment'].items():
             if count > 0:
@@ -466,6 +461,7 @@ def handle_callback(chat_id, data, cb_id):
                 p1_atk += EQUIPMENT[eq]['attack'] * count * mult
                 p1_def += EQUIPMENT[eq]['defense'] * count * mult
         p1_atk = int(p1_atk * random.uniform(0.9, 1.1))
+        
         p2_atk, p2_def = 0, 0
         for eq, count in target_user['equipment'].items():
             if count > 0:
@@ -473,19 +469,36 @@ def handle_callback(chat_id, data, cb_id):
                 p2_atk += EQUIPMENT[eq]['attack'] * count * mult
                 p2_def += EQUIPMENT[eq]['defense'] * count * mult
         p2_atk = int(p2_atk * random.uniform(0.9, 1.1))
+        
         dmg1 = max(0, p1_atk - int(p2_def * 0.4))
         dmg2 = max(0, p2_atk - int(p1_def * 0.4))
         
         c1 = COUNTRIES[user['country']]
         c2 = COUNTRIES[target_user['country']]
         
+        # اعلام جنگ در گروه همگانی
+        war_announcement = (
+            f"🚨 *خبر فوری: آغاز نبرد نظامی!* 🚨\n\n"
+            f"⚔️ نیروهای {c1['flag']} *{c1['name']}* به {c2['flag']} *{c2['name']}* حمله کردند!\n\n"
+            f"📊 *گزارش خسارات:*\n"
+            f"🔻 آسیب به {c2['name']}: {dmg1}\n"
+            f"🔻 آسیب به {c1['name']}: {dmg2}\n\n"
+        )
+        if dmg1 > dmg2:
+            war_announcement += f"🏆 *نتیجه:* پیروزی قاطع {c1['name']}!"
+        elif dmg2 > dmg1:
+            war_announcement += f"🏆 *نتیجه:* پیروزی قاطع {c2['name']}!"
+        else:
+            war_announcement += "🤝 *نتیجه:* نبرد با نتیجه مساوی و آتش‌بس به پایان رسید."
+            
+        send_message(GROUP_CHAT_ID, war_announcement)
+
+        # گزارش به کاربران
         report = f"⚔️ *گزارش نبرد*\n\n🔴 {c1['flag']} شما: ⚔️{p1_atk} 🛡️{p1_def}\n🔵 {c2['flag']} دشمن: ⚔️{p2_atk} 🛡️{p2_def}\n━━━━━━━━━━━━━━\n"
-        
         if dmg1 > dmg2:
             loot = int(target_user['budget'] * 0.15)
-            target_loss = int(target_user['budget'] * 0.15)
             user['wins'] += 1; user['xp'] += 50; user['budget'] += loot
-            target_user['losses'] += 1; target_user['budget'] -= target_loss
+            target_user['losses'] += 1; target_user['budget'] -= int(target_user['budget'] * 0.15)
             if target_user['equipment'] and random.random() < 0.3:
                 lost_eq = random.choice(list(target_user['equipment'].keys()))
                 target_user['equipment'][lost_eq] -= 1
@@ -507,6 +520,7 @@ def handle_callback(chat_id, data, cb_id):
                 report += f"\n💥 یک عدد {EQUIPMENT[lost_eq]['emoji']} {EQUIPMENT[lost_eq]['name']} شما نابود شد!"
         else:
             report += "🤝 *نبرد مساوی!*"
+            
         save_user(user); save_user(target_user)
         send_message(chat_id, report, reply_markup=main_menu_kb())
         send_message(target_id, f"⚠️ *شما مورد حمله قرار گرفتید!*\n\n{report}", reply_markup=main_menu_kb())
@@ -515,22 +529,21 @@ def handle_callback(chat_id, data, cb_id):
         if not user or not user['country']:
             send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
             return
-        text = f"🤝 *مدیریت اتحادیه*\n\nاتحادیه فعلی: *{user['alliance']}*\n\nبرای تغییر، پیام متنی بفرستید:\n`اتحادیه نام_جدید`"
+        text = f"🤝 *مدیریت اتحادیه*\n\n"
+        text += f"اتحادیه فعلی شما: *{user['alliance']}*\n\n"
+        text += "🌍 *ایجاد یا پیوستن به اتحادیه:*\n"
+        text += "نام اتحادیه مورد نظر خود را به صورت یک پیام متنی برای ربات بفرستید.\n"
+        text += "مثال: `اتحادیه ناتو` یا `اتحادیه محور مقاومت`"
         kb = {"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_main"}]]}
         send_message(chat_id, text, reply_markup=kb)
 
     elif data == "menu_lottery":
         text = "🎰 *لاتاری شانس*\n\nهزینه بلیط: 💰 100\n🥇 شانس 10%: برنده 1,000 سکه\n🏆 شانس 1%: برنده 5,000 سکه"
-        kb = {"inline_keyboard": [
-            [{"text": "🎟️ خرید بلیط (100 سکه)", "callback_data": "lottery_play"}],
-            [{"text": "🔙 بازگشت", "callback_data": "menu_main"}]
-        ]}
+        kb = {"inline_keyboard": [[{"text": "🎟️ خرید بلیط (100 سکه)", "callback_data": "lottery_play"}], [{"text": "🔙 بازگشت", "callback_data": "menu_main"}]]}
         send_message(chat_id, text, reply_markup=kb)
 
     elif data == "lottery_play":
-        if user['budget'] < 100:
-            send_message(chat_id, "❌ بودجه کافی ندارید!", reply_markup=main_menu_kb())
-            return
+        if user['budget'] < 100: return send_message(chat_id, "❌ بودجه کافی ندارید!", reply_markup=main_menu_kb())
         user['budget'] -= 100
         roll = random.randint(1, 100)
         if roll == 1:
@@ -543,9 +556,7 @@ def handle_callback(chat_id, data, cb_id):
         send_message(chat_id, msg, reply_markup=main_menu_kb())
 
     elif data == "action_daily":
-        if not user or not user['country']:
-            send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
-            return
+        if not user or not user['country']: return send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
         now = int(time.time())
         if now - user['last_daily'] >= 86400:
             user['budget'] += 300; user['last_daily'] = now
@@ -556,14 +567,11 @@ def handle_callback(chat_id, data, cb_id):
             send_message(chat_id, f"⏳ {rem // 3600} ساعت و {(rem % 3600) // 60} دقیقه", reply_markup=main_menu_kb())
 
     elif data == "menu_admin":
-        if not is_admin(chat_id):
-            send_message(chat_id, "❌ دسترسی محدود!", reply_markup=main_menu_kb())
-            return
+        if not is_admin(chat_id): return send_message(chat_id, "❌ دسترسی محدود!", reply_markup=main_menu_kb())
         send_message(chat_id, "🔧 *پنل مدیریت*", reply_markup=admin_menu_kb())
 
     elif data == "admin_toggle_war":
-        current = get_setting('war_enabled')
-        new_val = 'false' if current == 'true' else 'true'
+        new_val = 'false' if get_setting('war_enabled') == 'true' else 'true'
         set_setting('war_enabled', new_val)
         send_message(chat_id, f"✅ وضعیت جنگ: {'فعال' if new_val == 'true' else 'غیرفعال'}", reply_markup=admin_menu_kb())
 
@@ -593,39 +601,30 @@ def handle_callback(chat_id, data, cb_id):
         if not is_admin(chat_id): return
         prices = get_equipment_prices()
         text = "💎 *مدیریت قیمت تجهیزات*\n\n"
-        for k, v in EQUIPMENT.items():
-            text += f"{v['emoji']} {v['name']}: 💰{prices[k]}\n"
+        for k, v in EQUIPMENT.items(): text += f"{v['emoji']} {v['name']}: 💰{prices[k]}\n"
         text += "\nبرای تغییر قیمت، پیام متنی بفرستید:\n`set_price tank 150`"
-        kb = {"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_admin"}]]}
-        send_message(chat_id, text, reply_markup=kb)
+        send_message(chat_id, text, reply_markup={"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_admin"}]]})
 
-    # ═══════════════════════════════════════════
-    #  ✨ مدیریت کانال/گروه اجباری (اصلاح شده)
-    # ═══════════════════════════════════════════
     elif data == "admin_manage_chats":
         if not is_admin(chat_id): return
         chats = get_forced_chats()
-        text = "📢 *مدیریت لینک‌های اجباری (کانال/گروه)*\n\n"
+        text = "📢 *مدیریت لینک‌های اجباری*\n\n"
         if chats:
             text += "*لیست فعلی:*\n"
-            for ch_id, ch_title, ch_type in chats:
+            for ch_id, ch_title, ch_type, invite_link in chats:
                 type_emoji = "📢" if ch_type == "channel" else "👥"
                 text += f"{type_emoji} {ch_title} (`{ch_id}`)\n"
         else:
             text += "_(هیچ کانال یا گروهی تنظیم نشده)_\n"
-        text += "\n*دستورات:*\n"
-        text += "`add_chat @username` - افزودن کانال یا گروه\n"
-        text += "`remove_chat @username` - حذف با نام کاربری\n"
-        text += "`remove_chat ID` - حذف با شناسه عددی"
-        kb = {"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_admin"}]]}
-        send_message(chat_id, text, reply_markup=kb)
+        text += "\n*دستورات:*\n`add_chat @username` - افزودن\n`remove_chat @username` - حذف"
+        send_message(chat_id, text, reply_markup={"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_admin"}]]})
 
 
 # ═══════════════════════════════════════════
 #  حلقه اصلی ربات
 # ═══════════════════════════════════════════
 def main():
-    print("🎮 ربات جنگ جهانی (نسخه نهایی با عضویت اجباری تضمینی) در حال اجراست...")
+    print("🎮 ربات جنگ جهانی (نسخه نهایی) در حال اجراست...")
     last_update_id = None
     
     while True:
@@ -656,106 +655,68 @@ def main():
                                 new_alliance = text.replace("اتحادیه ", "").strip()
                                 user['alliance'] = new_alliance
                                 save_user(user)
-                                send_message(chat_id, f"✅ اتحادیه به «{new_alliance}» تغییر کرد.", reply_markup=main_menu_kb(is_admin_user=admin_user))
+                                send_message(chat_id, f"✅ شما اکنون عضو اتحادیه «*{new_alliance}*» هستید.", reply_markup=main_menu_kb(is_admin_user=admin_user))
                             
                             elif text.startswith("send_msg ") and admin_user:
                                 parts = text.split(maxsplit=2)
                                 if len(parts) >= 3:
                                     try:
                                         target_id = int(parts[1])
-                                        msg_text = parts[2]
-                                        res = send_message(target_id, f"📩 *پیام از پشتیبانی:*\n\n{msg_text}")
-                                        if res and res.get('ok'):
-                                            send_message(chat_id, f"✅ پیام به `{target_id}` ارسال شد.")
-                                        else:
-                                            send_message(chat_id, f"❌ خطا: {res}")
+                                        res = send_message(target_id, f"📩 *پیام از پشتیبانی:*\n\n{parts[2]}")
+                                        send_message(chat_id, f"✅ پیام به `{target_id}` ارسال شد." if res and res.get('ok') else f"❌ خطا: {res}")
                                     except ValueError:
                                         send_message(chat_id, "❌ شناسه باید عدد باشد.")
-                                else:
-                                    send_message(chat_id, "❌ فرمت: `send_msg ID متن`")
                             
                             elif text.startswith("add_money ") and admin_user:
                                 parts = text.split()
                                 if len(parts) == 3:
-                                    t_id, amount = int(parts[1]), int(parts[2])
-                                    t_user = get_user(t_id)
+                                    t_user = get_user(int(parts[1]))
                                     if t_user:
-                                        t_user['budget'] += amount
+                                        t_user['budget'] += int(parts[2])
                                         save_user(t_user)
-                                        send_message(chat_id, f"✅ {amount} سکه به {t_id} اضافه شد.")
-                                        send_message(t_id, f"🎁 ادمین {amount} سکه به حساب شما اضافه کرد!")
-                                    else:
-                                        send_message(chat_id, "❌ کاربر یافت نشد.")
+                                        send_message(chat_id, f"✅ {parts[2]} سکه به {parts[1]} اضافه شد.")
+                                        send_message(int(parts[1]), f"🎁 ادمین {parts[2]} سکه به حساب شما اضافه کرد!")
                             
                             elif text.startswith("remove_money ") and admin_user:
                                 parts = text.split()
                                 if len(parts) == 3:
-                                    t_id, amount = int(parts[1]), int(parts[2])
-                                    t_user = get_user(t_id)
+                                    t_user = get_user(int(parts[1]))
                                     if t_user:
-                                        t_user['budget'] = max(0, t_user['budget'] - amount)
+                                        t_user['budget'] = max(0, t_user['budget'] - int(parts[2]))
                                         save_user(t_user)
-                                        send_message(chat_id, f"✅ {amount} سکه از {t_id} کسر شد.")
-                                        send_message(t_id, f"⚠️ ادمین {amount} سکه از حساب شما کسر کرد!")
-                                    else:
-                                        send_message(chat_id, "❌ کاربر یافت نشد.")
+                                        send_message(chat_id, f"✅ {parts[2]} سکه از {parts[1]} کسر شد.")
                             
                             elif text.startswith("set_price ") and admin_user:
                                 parts = text.split()
-                                if len(parts) == 3:
-                                    eq_key, new_price = parts[1], parts[2]
-                                    if eq_key not in EQUIPMENT:
-                                        send_message(chat_id, f"❌ تجهیز '{eq_key}' وجود ندارد!\nموجود: {', '.join(EQUIPMENT.keys())}")
-                                        continue
+                                if len(parts) == 3 and parts[1] in EQUIPMENT:
                                     try:
-                                        new_price = int(new_price)
-                                        set_equipment_price(eq_key, new_price)
-                                        send_message(chat_id, f"✅ قیمت {EQUIPMENT[eq_key]['emoji']} {EQUIPMENT[eq_key]['name']} به 💰{new_price} تغییر کرد.", reply_markup=admin_menu_kb())
+                                        set_equipment_price(parts[1], int(parts[2]))
+                                        send_message(chat_id, f"✅ قیمت {EQUIPMENT[parts[1]]['emoji']} {EQUIPMENT[parts[1]]['name']} به 💰{parts[2]} تغییر کرد.", reply_markup=admin_menu_kb())
                                     except ValueError:
                                         send_message(chat_id, "❌ قیمت باید عدد باشد!")
-                                else:
-                                    send_message(chat_id, "❌ فرمت: `set_price tank 150`")
                             
-                            # ✨ افزودن کانال یا گروه اجباری
                             elif text.startswith("add_chat ") and admin_user:
                                 parts = text.split(maxsplit=1)
                                 if len(parts) == 2:
-                                    chat_input = parts[1].strip()
                                     try:
-                                        # دریافت اطلاعات دقیق چت برای به دست آوردن ID عددی
-                                        res = requests.post(f"{BASE_URL}getChat", json={'chat_id': chat_input}, timeout=10).json()
+                                        res = requests.post(f"{BASE_URL}getChat", json={'chat_id': parts[1].strip()}, timeout=10).json()
                                         if res.get('ok'):
-                                            real_id = res['result']['id']
-                                            title = res['result'].get('title') or res['result'].get('username') or chat_input
-                                            chat_type = res['result'].get('type', 'unknown') # channel, supergroup, group
-                                            
-                                            add_forced_chat(real_id, title, chat_type)
-                                            type_name = "کانال" if chat_type == "channel" else "گروه"
-                                            send_message(chat_id, f"✅ {type_name} «{title}» (`{real_id}`) به لیست اجباری اضافه شد.\n\n⚠️ *مهم:* مطمئن شوید ربات در این {type_name} **ادمین** است، در غیر این صورت بررسی عضویت کار نخواهد کرد!", reply_markup=admin_menu_kb())
+                                            add_forced_chat(res['result']['id'], res['result'].get('title') or res['result'].get('username') or parts[1].strip(), res['result'].get('type', 'unknown'))
+                                            send_message(chat_id, f"✅ {parts[1].strip()} به لیست اجباری اضافه شد.\n\n⚠️ *مهم:* ربات باید در این چت **ادمین** باشد!", reply_markup=admin_menu_kb())
                                         else:
-                                            send_message(chat_id, f"❌ چت یافت نشد. مطمئن شوید ربات در آن عضو است.\nخطا: {res.get('description', '')}")
+                                            send_message(chat_id, f"❌ خطا: {res.get('description')}")
                                     except Exception as e:
                                         send_message(chat_id, f"❌ خطا: {e}")
-                                else:
-                                    send_message(chat_id, "❌ فرمت: `add_chat @username`")
                             
-                            # ✨ حذف کانال یا گروه اجباری
                             elif text.startswith("remove_chat ") and admin_user:
                                 parts = text.split(maxsplit=1)
                                 if len(parts) == 2:
-                                    chat_input = parts[1].strip()
                                     chats = get_forced_chats()
-                                    removed = False
-                                    for ch_id, ch_title, ch_type in chats:
-                                        if chat_input == ch_title or chat_input == str(ch_id) or chat_input == f"@{ch_title.lstrip('@')}":
+                                    for ch_id, ch_title, ch_type, invite_link in chats:
+                                        if parts[1].strip() in [ch_title, str(ch_id), f"@{ch_title.lstrip('@')}"]:
                                             remove_forced_chat(ch_id)
                                             send_message(chat_id, f"✅ {ch_title} حذف شد.", reply_markup=admin_menu_kb())
-                                            removed = True
                                             break
-                                    if not removed:
-                                        send_message(chat_id, "❌ موردی با این مشخصات یافت نشد.")
-                                else:
-                                    send_message(chat_id, "❌ فرمت: `remove_chat @username` یا `remove_chat ID`")
                             
                             elif admin_user:
                                 send_message(chat_id, "🔧 *پنل مدیریت پشتیبان*", reply_markup=main_menu_kb(is_admin_user=True))
@@ -769,9 +730,10 @@ def main():
                                 else:
                                     c_info = COUNTRIES[user['country']]
                                     msg = f"{c_info['flag']} *{c_info['name']}*\n\n{text}"
+                                
                                 res = send_message(GROUP_CHAT_ID, msg)
                                 if res and res.get('ok'):
-                                    send_message(chat_id, "✅ پیام در گروه ارسال شد.", reply_markup=main_menu_kb(is_admin_user=admin_user))
+                                    send_message(chat_id, "✅ پیام در گروه همگانی ارسال شد.", reply_markup=main_menu_kb(is_admin_user=admin_user))
                                 else:
                                     send_message(chat_id, "❌ خطا در ارسال به گروه.", reply_markup=main_menu_kb(is_admin_user=admin_user))
             
