@@ -18,168 +18,16 @@ BASE_URL = f"https://tapi.bale.ai/bot{TOKEN}/"
 #  داده‌های بازی
 # ═══════════════════════════════════════════
 COUNTRIES = {
-    # --- خاورمیانه و شمال آفریقا (اصلاح شده و دقیق) ---
     "iran": {"name": "ایران", "budget": 900, "bonus": "missile", "bonus_val": 1.4, "flag": "🇮🇷"},
     "turkey": {"name": "ترکیه", "budget": 880, "bonus": "drone", "bonus_val": 1.35, "flag": "🇹🇷"},
     "israel": {"name": "اسرائیل", "budget": 900, "bonus": "defense", "bonus_val": 1.4, "flag": "🇮🇱"},
     "palestine": {"name": "فلسطین", "budget": 350, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇵🇸"},
-    "egypt": {"name": "مصر", "budget": 860, "bonus": "tank", "bonus_val": 1.3, "flag": "🇪🇬"},
-    "saudi": {"name": "عربستان", "budget": 810, "bonus": "air", "bonus_val": 1.3, "flag": "🇸🇦"},
-    "uae": {"name": "امارات", "budget": 800, "bonus": "drone", "bonus_val": 1.3, "flag": "🇦🇪"},
-    "iraq": {"name": "عراق", "budget": 560, "bonus": "soldier", "bonus_val": 1.2, "flag": "🇮🇶"},
-    "syria": {"name": "سوریه", "budget": 430, "bonus": "missile", "bonus_val": 1.2, "flag": "🇸🇾"},
-    "lebanon": {"name": "لبنان", "budget": 380, "bonus": "missile", "bonus_val": 1.15, "flag": "🇱🇧"},
-    "jordan": {"name": "اردن", "budget": 420, "bonus": "air", "bonus_val": 1.2, "flag": "🇯🇴"},
-    "yemen": {"name": "یمن", "budget": 370, "bonus": "missile", "bonus_val": 1.15, "flag": "🇾🇪"},
-    "oman": {"name": "عمان", "budget": 360, "bonus": "ship", "bonus_val": 1.15, "flag": "🇴🇲"},
-    "qatar": {"name": "قطر", "budget": 350, "bonus": "air", "bonus_val": 1.15, "flag": "🇶🇦"},
-    "kuwait": {"name": "کویت", "budget": 340, "bonus": "air", "bonus_val": 1.15, "flag": "🇰🇼"},
-    "libya": {"name": "لیبی", "budget": 350, "bonus": "tank", "bonus_val": 1.15, "flag": "🇱🇾"},
-    "tunisia": {"name": "تونس", "budget": 340, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇳"},
-    "algeria": {"name": "الجزایر", "budget": 750, "bonus": "missile", "bonus_val": 1.25, "flag": "🇩🇿"},
-    "morocco": {"name": "مراکش", "budget": 630, "bonus": "drone", "bonus_val": 1.25, "flag": "🇲🇦"},
-    
-    # --- سایر کشورها (پرچم‌ها بررسی و تایید شدند) ---
     "usa": {"name": "آمریکا", "budget": 1000, "bonus": "air", "bonus_val": 1.4, "flag": "🇺🇸"},
     "russia": {"name": "روسیه", "budget": 980, "bonus": "tank", "bonus_val": 1.4, "flag": "🇷🇺"},
     "china": {"name": "چین", "budget": 970, "bonus": "soldier", "bonus_val": 1.35, "flag": "🇨🇳"},
-    "india": {"name": "هند", "budget": 950, "bonus": "missile", "bonus_val": 1.35, "flag": "🇮🇳"},
     "uk": {"name": "انگلستان", "budget": 940, "bonus": "ship", "bonus_val": 1.35, "flag": "🇬🇧"},
     "france": {"name": "فرانسه", "budget": 930, "bonus": "air", "bonus_val": 1.35, "flag": "🇫🇷"},
-    "japan": {"name": "ژاپن", "budget": 920, "bonus": "ship", "bonus_val": 1.35, "flag": "🇯🇵"},
-    "skorea": {"name": "کره جنوبی", "budget": 910, "bonus": "drone", "bonus_val": 1.35, "flag": "🇰🇷"},
     "germany": {"name": "آلمان", "budget": 890, "bonus": "tank", "bonus_val": 1.3, "flag": "🇩🇪"},
-    "italy": {"name": "ایتالیا", "budget": 870, "bonus": "ship", "bonus_val": 1.3, "flag": "🇮🇹"},
-    "pakistan": {"name": "پاکستان", "budget": 850, "bonus": "missile", "bonus_val": 1.3, "flag": "🇵🇰"},
-    "brazil": {"name": "برزیل", "budget": 840, "bonus": "soldier", "bonus_val": 1.3, "flag": "🇧🇷"},
-    "australia": {"name": "استرالیا", "budget": 830, "bonus": "air", "bonus_val": 1.3, "flag": "🇦🇺"},
-    "canada": {"name": "کانادا", "budget": 820, "bonus": "defense", "bonus_val": 1.3, "flag": "🇨🇦"},
-    "spain": {"name": "اسپانیا", "budget": 790, "bonus": "ship", "bonus_val": 1.25, "flag": "🇪🇸"},
-    "indonesia": {"name": "اندونزی", "budget": 780, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇮🇩"},
-    "poland": {"name": "لهستان", "budget": 770, "bonus": "tank", "bonus_val": 1.25, "flag": "🇵🇱"},
-    "ukraine": {"name": "اوکراین", "budget": 760, "bonus": "drone", "bonus_val": 1.3, "flag": "🇺🇦"},
-    "argentina": {"name": "آرژانتین", "budget": 740, "bonus": "ship", "bonus_val": 1.25, "flag": "🇦🇷"},
-    "mexico": {"name": "مکزیک", "budget": 730, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇲🇽"},
-    "southafrica": {"name": "آفریقای جنوبی", "budget": 720, "bonus": "tank", "bonus_val": 1.25, "flag": "🇿🇦"},
-    "netherlands": {"name": "هلند", "budget": 710, "bonus": "ship", "bonus_val": 1.25, "flag": "🇳🇱"},
-    "greece": {"name": "یونان", "budget": 700, "bonus": "air", "bonus_val": 1.25, "flag": "🇬🇷"},
-    "vietnam": {"name": "ویتنام", "budget": 690, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇻🇳"},
-    "thailand": {"name": "تایلند", "budget": 680, "bonus": "ship", "bonus_val": 1.25, "flag": "🇹🇭"},
-    "malaysia": {"name": "مالزی", "budget": 670, "bonus": "air", "bonus_val": 1.25, "flag": "🇲🇾"},
-    "philippines": {"name": "فیلیپین", "budget": 660, "bonus": "ship", "bonus_val": 1.25, "flag": "🇵🇭"},
-    "colombia": {"name": "کلمبیا", "budget": 650, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇨🇴"},
-    "nigeria": {"name": "نیجریه", "budget": 640, "bonus": "soldier", "bonus_val": 1.25, "flag": "🇳🇬"},
-    "sweden": {"name": "سوئد", "budget": 620, "bonus": "air", "bonus_val": 1.25, "flag": "🇸🇪"},
-    "switzerland": {"name": "سوئیس", "budget": 610, "bonus": "defense", "bonus_val": 1.3, "flag": "🇨🇭"},
-    "singapore": {"name": "سنگاپور", "budget": 600, "bonus": "ship", "bonus_val": 1.25, "flag": "🇸🇬"},
-    "romania": {"name": "رومانی", "budget": 590, "bonus": "tank", "bonus_val": 1.2, "flag": "🇷🇴"},
-    "chile": {"name": "شیلی", "budget": 580, "bonus": "ship", "bonus_val": 1.2, "flag": "🇨🇱"},
-    "finland": {"name": "فنلاند", "budget": 570, "bonus": "air", "bonus_val": 1.2, "flag": "🇫🇮"},
-    "newzealand": {"name": "نیوزیلند", "budget": 550, "bonus": "ship", "bonus_val": 1.2, "flag": "🇳🇿"},
-    "peru": {"name": "پرو", "budget": 540, "bonus": "soldier", "bonus_val": 1.2, "flag": "🇵🇪"},
-    "venezuela": {"name": "ونزوئلا", "budget": 530, "bonus": "missile", "bonus_val": 1.2, "flag": "🇻🇪"},
-    "czechia": {"name": "چک", "budget": 520, "bonus": "tank", "bonus_val": 1.2, "flag": "🇨🇿"},
-    "bangladesh": {"name": "بنگلادش", "budget": 510, "bonus": "soldier", "bonus_val": 1.2, "flag": "🇧🇩"},
-    "hungary": {"name": "مجارستان", "budget": 500, "bonus": "tank", "bonus_val": 1.2, "flag": "🇭🇺"},
-    "belgium": {"name": "بلژیک", "budget": 490, "bonus": "air", "bonus_val": 1.2, "flag": "🇧🇪"},
-    "austria": {"name": "اتریش", "budget": 480, "bonus": "defense", "bonus_val": 1.2, "flag": "🇦🇹"},
-    "norway": {"name": "نروژ", "budget": 470, "bonus": "ship", "bonus_val": 1.2, "flag": "🇳🇴"},
-    "denmark": {"name": "دانمارک", "budget": 460, "bonus": "air", "bonus_val": 1.2, "flag": "🇩🇰"},
-    "portugal": {"name": "پرتغال", "budget": 440, "bonus": "ship", "bonus_val": 1.2, "flag": "🇵🇹"},
-    "serbia": {"name": "صربستان", "budget": 410, "bonus": "tank", "bonus_val": 1.2, "flag": "🇷🇸"},
-    "azerbaijan": {"name": "آذربایجان", "budget": 400, "bonus": "drone", "bonus_val": 1.25, "flag": "🇦🇿"},
-    "afghanistan": {"name": "افغانستان", "budget": 390, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇦🇫"},
-    "georgia": {"name": "گرجستان", "budget": 330, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇪"},
-    "armenia": {"name": "ارمنستان", "budget": 320, "bonus": "defense", "bonus_val": 1.15, "flag": "🇦🇲"},
-    "kazakhstan": {"name": "قزاقستان", "budget": 310, "bonus": "tank", "bonus_val": 1.15, "flag": "🇰🇿"},
-    "uzbekistan": {"name": "ازبکستان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇺🇿"},
-    "mongolia": {"name": "مغولستان", "budget": 300, "bonus": "tank", "bonus_val": 1.15, "flag": "🇲🇳"},
-    "cuba": {"name": "کوبا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇨🇺"},
-    "bolivia": {"name": "بولیوی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇴"},
-    "paraguay": {"name": "پاراگوئه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇵🇾"},
-    "uruguay": {"name": "اروگوئه", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇺🇾"},
-    "ecuador": {"name": "اکوادور", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇪🇨"},
-    "guatemala": {"name": "گواتمالا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇹"},
-    "costarica": {"name": "کاستاریکا", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇨🇷"},
-    "panama": {"name": "پاناما", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇵🇦"},
-    "jamaica": {"name": "جامائیکا", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇯🇲"},
-    "trinidad": {"name": "ترینیداد", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇹🇹"},
-    "bahamas": {"name": "باهاما", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇧🇸"},
-    "croatia": {"name": "کرواسی", "budget": 350, "bonus": "ship", "bonus_val": 1.15, "flag": "🇭🇷"},
-    "bulgaria": {"name": "بلغارستان", "budget": 340, "bonus": "tank", "bonus_val": 1.15, "flag": "🇧🇬"},
-    "slovakia": {"name": "اسلواکی", "budget": 330, "bonus": "tank", "bonus_val": 1.15, "flag": "🇸🇰"},
-    "lithuania": {"name": "لیتوانی", "budget": 320, "bonus": "air", "bonus_val": 1.15, "flag": "🇱🇹"},
-    "latvia": {"name": "لتونی", "budget": 310, "bonus": "air", "bonus_val": 1.15, "flag": "🇱🇻"},
-    "estonia": {"name": "استونی", "budget": 300, "bonus": "cyber", "bonus_val": 1.15, "flag": "🇪🇪"},
-    "belarus": {"name": "بلاروس", "budget": 350, "bonus": "missile", "bonus_val": 1.15, "flag": "🇧🇾"},
-    "moldova": {"name": "مولداوی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇩"},
-    "cyprus": {"name": "قبرس", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇨🇾"},
-    "malta": {"name": "مالت", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇹"},
-    "iceland": {"name": "ایسلند", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇮🇸"},
-    "luxembourg": {"name": "لوکزامبورگ", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇱🇺"},
-    "ireland": {"name": "ایرلند", "budget": 350, "bonus": "air", "bonus_val": 1.15, "flag": "🇮🇪"},
-    "sudan": {"name": "سودان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇩"},
-    "ethiopia": {"name": "اتیوپی", "budget": 350, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇪🇹"},
-    "kenya": {"name": "کنیا", "budget": 320, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇰🇪"},
-    "ghana": {"name": "غنا", "budget": 310, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇭"},
-    "senegal": {"name": "سنگال", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇳"},
-    "tanzania": {"name": "تانزانیا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇿"},
-    "uganda": {"name": "اوگاندا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇺🇬"},
-    "zambia": {"name": "زامبیا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇿🇲"},
-    "zimbabwe": {"name": "زیمبابوه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇿🇼"},
-    "angola": {"name": "آنگولا", "budget": 320, "bonus": "missile", "bonus_val": 1.15, "flag": "🇦🇴"},
-    "mozambique": {"name": "موزامبیک", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇿"},
-    "madagascar": {"name": "ماداگاسکار", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇬"},
-    "cameroon": {"name": "کامرون", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇨🇲"},
-    "ivorycoast": {"name": "ساحل عاج", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇨🇮"},
-    "mali": {"name": "مالی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇱"},
-    "burkina": {"name": "بورکینافاسو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇫"},
-    "niger": {"name": "نیجر", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇳🇪"},
-    "chad": {"name": "چاد", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇩"},
-    "somalia": {"name": "سومالی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇴"},
-    "rwanda": {"name": "رواندا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇷🇼"},
-    "nepal": {"name": "نپال", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇳🇵"},
-    "srilanka": {"name": "سریلانکا", "budget": 320, "bonus": "ship", "bonus_val": 1.15, "flag": "🇱🇰"},
-    "myanmar": {"name": "میانمار", "budget": 330, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇲"},
-    "cambodia": {"name": "کامبوج", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇰🇭"},
-    "laos": {"name": "لائوس", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇱🇦"},
-    "brunei": {"name": "برونئی", "budget": 350, "bonus": "ship", "bonus_val": 1.15, "flag": "🇧🇳"},
-    "papua": {"name": "پاپوآ گینه نو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇵🇬"},
-    "fiji": {"name": "فیجی", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇫🇯"},
-    "solomon": {"name": "جزایر سلیمان", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇸🇧"},
-    "vanuatu": {"name": "وانواتو", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇻🇺"},
-    "samoa": {"name": "ساموآ", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇼🇸"},
-    "kiribati": {"name": "کیریباتی", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇰🇮"},
-    "tonga": {"name": "تونگا", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇹🇴"},
-    "seychelles": {"name": "سیشل", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇸🇨"},
-    "mauritius": {"name": "موریس", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇺"},
-    "maldives": {"name": "مالدیو", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇻"},
-    "bhutan": {"name": "بوتان", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇧🇹"},
-    "tajikistan": {"name": "تاجیکستان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇯"},
-    "kyrgyzstan": {"name": "قرقیزستان", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇰🇬"},
-    "turkmenistan": {"name": "ترکمنستان", "budget": 300, "bonus": "missile", "bonus_val": 1.15, "flag": "🇹🇲"},
-    "northkorea": {"name": "کره شمالی", "budget": 400, "bonus": "missile", "bonus_val": 1.3, "flag": "🇰🇵"},
-    "haiti": {"name": "هائیتی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇭🇹"},
-    "honduras": {"name": "هندوراس", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇭🇳"},
-    "elsalvador": {"name": "السالوادور", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇻"},
-    "nicaragua": {"name": "نیکاراگوئه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇳🇮"},
-    "dominican": {"name": "جمهوری دومینیکن", "budget": 320, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇩🇴"},
-    "albania": {"name": "آلبانی", "budget": 310, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇦🇱"},
-    "macedonia": {"name": "مقدونیه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇰"},
-    "bosnia": {"name": "بوسنی", "budget": 310, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇦"},
-    "kosovo": {"name": "کوزوو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇽🇰"},
-    "montenegro": {"name": "مونته‌نگرو", "budget": 300, "bonus": "ship", "bonus_val": 1.15, "flag": "🇲🇪"},
-    "andorra": {"name": "آندورا", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇦🇩"},
-    "monaco": {"name": "موناکو", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇲🇨"},
-    "sanmarino": {"name": "سان مارینو", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇸🇲"},
-    "vatican": {"name": "واتیکان", "budget": 300, "bonus": "defense", "bonus_val": 1.15, "flag": "🇻🇦"},
-    "mauritania": {"name": "موریتانی", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇲🇷"},
-    "gambia": {"name": "گامبیا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇲"},
-    "guinea": {"name": "گینه", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇬🇳"},
-    "liberia": {"name": "لیبریا", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇱🇷"},
-    "sierraleone": {"name": "سیرالئون", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇸🇱"},
-    "togo": {"name": "توگو", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇹🇬"},
-    "benin": {"name": "بنین", "budget": 300, "bonus": "soldier", "bonus_val": 1.15, "flag": "🇧🇯"},
 }
 
 EQUIPMENT = {
@@ -224,7 +72,9 @@ def init_db():
 
     cursor.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)')
     cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('war_enabled', 'true')")
-    cursor.execute('CREATE TABLE IF NOT EXISTS forced_channels (chat_id INTEGER PRIMARY KEY, title TEXT)')
+    
+    # جدول کانال‌ها/گروه‌های اجباری
+    cursor.execute('CREATE TABLE IF NOT EXISTS forced_chats (chat_id TEXT PRIMARY KEY, title TEXT, type TEXT)')
     
     conn.commit()
     return conn
@@ -288,41 +138,50 @@ def set_equipment_price(eq_key, new_price):
     cursor.execute("UPDATE equipment_prices SET price = ? WHERE eq_key = ?", (new_price, eq_key))
     conn.commit()
 
-def add_forced_channel(chat_id, title):
+def add_forced_chat(chat_id, title, chat_type):
     cursor = conn.cursor()
-    cursor.execute("INSERT OR REPLACE INTO forced_channels (chat_id, title) VALUES (?, ?)", (chat_id, title))
+    cursor.execute("INSERT OR REPLACE INTO forced_chats (chat_id, title, type) VALUES (?, ?, ?)", (str(chat_id), title, chat_type))
     conn.commit()
 
-def remove_forced_channel(chat_id):
+def remove_forced_chat(chat_id):
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM forced_channels WHERE chat_id = ?", (chat_id,))
+    cursor.execute("DELETE FROM forced_chats WHERE chat_id = ?", (str(chat_id),))
     conn.commit()
 
-def get_forced_channels():
+def get_forced_chats():
     cursor = conn.cursor()
-    cursor.execute("SELECT chat_id, title FROM forced_channels")
+    cursor.execute("SELECT chat_id, title, type FROM forced_chats")
     return cursor.fetchall()
 
+# ═══════════════════════════════════════════
+#  ✨ بررسی عضویت (اصلاح‌شده و تضمینی)
+# ═══════════════════════════════════════════
 def check_user_membership(user_id):
-    channels = get_forced_channels()
-    if not channels:
+    chats = get_forced_chats()
+    if not chats:
         return True, []
     
     not_member = []
-    for ch_id, ch_title in channels:
+    for ch_id, ch_title, ch_type in chats:
         try:
             payload = {'chat_id': ch_id, 'user_id': user_id}
             response = requests.post(f"{BASE_URL}getChatMember", json=payload, timeout=10)
             result = response.json()
+            
             if not result.get('ok'):
-                not_member.append((ch_id, ch_title))
+                # اگر ربات ادمین نباشد، اینجا خطا می‌دهد. ما فرض را بر عدم عضویت می‌گذاریم تا کاربر مجبور شود
+                print(f"⚠️ خطای بررسی عضویت در {ch_title} (آیا ربات ادمین است؟): {result.get('description')}")
+                not_member.append((ch_id, ch_title, ch_type))
                 continue
+                
             status = result['result'].get('status', '')
+            # وضعیت‌های مجاز: member, administrator, creator, restricted
+            # وضعیت‌های غیرمجاز: left, kicked
             if status in ['left', 'kicked']:
-                not_member.append((ch_id, ch_title))
+                not_member.append((ch_id, ch_title, ch_type))
         except Exception as e:
-            print(f"❌ خطا در بررسی عضویت کانال {ch_id}: {e}")
-            not_member.append((ch_id, ch_title))
+            print(f"❌ خطای شبکه در بررسی {ch_id}: {e}")
+            not_member.append((ch_id, ch_title, ch_type))
     
     return len(not_member) == 0, not_member
 
@@ -357,12 +216,11 @@ def main_menu_kb(is_admin_user=False):
             [{"text": "📩 ارسال پیام به کاربر", "callback_data": "admin_prompt_msg"}],
             [{"text": "💰 مدیریت بودجه", "callback_data": "admin_manage_budget"}],
             [{"text": "💎 مدیریت قیمت تجهیزات", "callback_data": "admin_manage_prices"}],
-            [{"text": "📢 مدیریت کانال‌های اجباری", "callback_data": "admin_manage_channels"}],
+            [{"text": "📢 مدیریت لینک‌های اجباری", "callback_data": "admin_manage_chats"}],
             [{"text": "👥 لیست کاربران", "callback_data": "admin_list_users"}]
         ]
         return kb
     
-    # ✨ منوی اصلی با دکمه‌های خرید سکه و انصراف
     kb["inline_keyboard"] = [
         [{"text": "🌍 انتخاب کشور", "callback_data": "menu_country"}],
         [{"text": "🏪 فروشگاه", "callback_data": "menu_shop"}, {"text": "📦 انبار و تجارت", "callback_data": "menu_inventory"}],
@@ -380,21 +238,27 @@ def admin_menu_kb():
         [{"text": "📩 ارسال پیام به کاربر", "callback_data": "admin_prompt_msg"}],
         [{"text": "💰 مدیریت بودجه", "callback_data": "admin_manage_budget"}],
         [{"text": "💎 مدیریت قیمت تجهیزات", "callback_data": "admin_manage_prices"}],
-        [{"text": "📢 مدیریت کانال‌های اجباری", "callback_data": "admin_manage_channels"}],
+        [{"text": "📢 مدیریت لینک‌های اجباری", "callback_data": "admin_manage_chats"}],
         [{"text": "👥 لیست کاربران", "callback_data": "admin_list_users"}],
         [{"text": "🔙 بازگشت", "callback_data": "menu_main"}]
     ]}
 
-def show_join_required(chat_id, not_member_channels):
+def show_join_required(chat_id, not_member_chats):
     text = "🔒 *عضویت اجباری*\n\n"
-    text += "برای استفاده از ربات، ابتدا باید در کانال‌های زیر عضو شوید:\n\n"
+    text += "برای استفاده از ربات، ابتدا باید در کانال/گروه‌های زیر عضو شوید:\n\n"
     kb = {"inline_keyboard": []}
-    for ch_id, ch_title in not_member_channels:
-        if ch_title and ch_title.startswith('@'):
-            username = ch_title
+    
+    for ch_id, ch_title, ch_type in not_member_chats:
+        chat_type_emoji = "📢" if ch_type == "channel" else "👥"
+        # تلاش برای ساخت لینک اگر نام کاربری داشته باشد
+        link_text = ch_title.lstrip('@')
+        if link_text and not link_text.startswith('-100'): # اگر نام کاربری باشد نه آیدی عددی
+            url = f"https://ble.ir/{link_text}"
         else:
-            username = f"کانال {ch_id}"
-        kb["inline_keyboard"].append([{"text": f"📢 عضویت در {ch_title}", "url": f"https://ble.ir/{username.lstrip('@')}"}])
+            url = f"https://ble.ir/" # لینک پیش‌فرض اگر آیدی عددی باشد
+            
+        kb["inline_keyboard"].append([{"text": f"{chat_type_emoji} عضویت در {ch_title}", "url": url}])
+        
     kb["inline_keyboard"].append([{"text": "✅ بررسی مجدد عضویت", "callback_data": "check_membership"}])
     send_message(chat_id, text, reply_markup=kb)
 
@@ -410,63 +274,43 @@ def handle_callback(chat_id, data, cb_id):
         send_message(chat_id, "🚫 *شما به عنوان پشتیبان، امکان بازی ندارید!*", reply_markup=main_menu_kb(is_admin_user=True))
         return
     
+    # بررسی عضویت اجباری قبل از هر اکشن بازی
     if not admin_user and data not in ["menu_main", "check_membership"] and data.startswith(("menu_", "action_", "buy_", "trade_", "attack_", "select_country", "lottery_", "buy_coins", "resign_")):
-        is_member, not_member_channels = check_user_membership(chat_id)
+        is_member, not_member_chats = check_user_membership(chat_id)
         if not is_member:
-            show_join_required(chat_id, not_member_channels)
+            show_join_required(chat_id, not_member_chats)
             return
     
     if data == "check_membership":
-        is_member, not_member_channels = check_user_membership(chat_id)
+        is_member, not_member_chats = check_user_membership(chat_id)
         if is_member:
             send_message(chat_id, "✅ *عضویت شما تایید شد!*\nحالا می‌توانید از تمام امکانات ربات استفاده کنید.", reply_markup=main_menu_kb())
         else:
-            show_join_required(chat_id, not_member_channels)
-            send_message(chat_id, "❌ شما هنوز در تمام کانال‌های اجباری عضو نشده‌اید.")
+            show_join_required(chat_id, not_member_chats)
+            send_message(chat_id, "❌ شما هنوز در تمام کانال‌ها/گروه‌های اجباری عضو نشده‌اید.")
 
     if data == "menu_main":
         msg = "🌍 *به بازی جنگ جهانی خوش آمدید!*\n\nاز منوی زیر بخش مورد نظر را انتخاب کنید:"
         kb = main_menu_kb(is_admin_user=admin_user)
         send_message(chat_id, msg, reply_markup=kb)
 
-    # ✨ دکمه خرید سکه
     elif data == "buy_coins":
         if not user or not user['country']:
             send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
             return
-        
         msg = "💎 *خرید سکه از پشتیبان*\n\n"
-        msg += "برای خرید سکه، لطفاً به پشتیبان پیام دهید و مقدار مورد نظر را درخواست کنید.\n\n"
-        msg += "📩 *روش درخواست:*\n"
-        msg += "1. به پشتیبان پیام دهید\n"
-        msg += "2. مقدار سکه مورد نظر را بگویید\n"
-        msg += "3. پشتیبان پس از بررسی، سکه را به حساب شما اضافه می‌کند\n\n"
-        msg += "💡 *نکته:* پشتیبان می‌تواند با دستور `add_money [شناسه_شما] [مقدار]` سکه اضافه کند.\n\n"
         msg += f"🆔 *شناسه شما:* `{chat_id}`\n"
-        msg += f"💰 *بودجه فعلی:* {user['budget']} سکه"
-        
-        kb = {"inline_keyboard": [
-            [{"text": "📩 ارسال درخواست به پشتیبان", "url": "https://ble.ir/"}],
-            [{"text": "🔙 بازگشت به منو", "callback_data": "menu_main"}]
-        ]}
+        msg += f"💰 *بودجه فعلی:* {user['budget']} سکه\n\n"
+        msg += "برای خرید، این شناسه و مقدار مورد نظر را برای پشتیبان ارسال کنید."
+        kb = {"inline_keyboard": [[{"text": "🔙 بازگشت به منو", "callback_data": "menu_main"}]]}
         send_message(chat_id, msg, reply_markup=kb)
 
-    # ✨ دکمه انصراف از بازی
     elif data == "resign_confirm":
         if not user or not user['country']:
             send_message(chat_id, "❌ شما کشوری ندارید!", reply_markup=main_menu_kb())
             return
-        
         c_info = COUNTRIES[user['country']]
-        msg = f"🚨 *تایید انصراف از بازی*\n\n"
-        msg += f"آیا مطمئن هستید که می‌خواهید از {c_info['flag']} {c_info['name']} انصراف دهید؟\n\n"
-        msg += "⚠️ *هشدار:*\n"
-        msg += "• تمام بودجه شما پاک می‌شود\n"
-        msg += "• تمام تجهیزات شما از بین می‌رود\n"
-        msg += "• آمار برد و باخت شما صفر می‌شود\n"
-        msg += "• کشور شما برای دیگران آزاد می‌شود\n\n"
-        msg += "این عملیات غیرقابل بازگشت است!"
-        
+        msg = f"🚨 *تایید انصراف از بازی*\n\nآیا مطمئن هستید که می‌خواهید از {c_info['flag']} {c_info['name']} انصراف دهید؟\n\n⚠️ *تمام اطلاعات شما پاک می‌شود!*"
         kb = {"inline_keyboard": [
             [{"text": "✅ بله، انصراف می‌دهم", "callback_data": "resign_confirm_yes"}],
             [{"text": "❌ خیر، منصرف شدم", "callback_data": "menu_main"}]
@@ -477,16 +321,9 @@ def handle_callback(chat_id, data, cb_id):
         if not user or not user['country']:
             send_message(chat_id, "❌ شما کشوری ندارید!", reply_markup=main_menu_kb())
             return
-        
         c_info = COUNTRIES[user['country']]
         reset_user_full(chat_id)
-        
-        msg = f"✅ *انصراف شما ثبت شد!*\n\n"
-        msg += f"شما از {c_info['flag']} {c_info['name']} خارج شدید.\n"
-        msg += "تمام اطلاعات شما پاک شد.\n\n"
-        msg += "حالا می‌توانید کشور جدیدی انتخاب کنید."
-        
-        send_message(chat_id, msg, reply_markup=main_menu_kb())
+        send_message(chat_id, f"✅ *انصراف شما ثبت شد!*\n\nشما از {c_info['flag']} {c_info['name']} خارج شدید.", reply_markup=main_menu_kb())
 
     elif data == "menu_profile":
         if not user or not user['country']:
@@ -494,15 +331,7 @@ def handle_callback(chat_id, data, cb_id):
             return
         c_info = COUNTRIES[user['country']]
         inv_text = "\n".join([f"• {RESOURCES[k]['emoji']} {RESOURCES[k]['name']}: {v}" for k, v in user['inventory'].items() if v > 0]) or "_(خالی)_"
-        msg = f"👤 *پروفایل فرمانده*\n\n"
-        msg += f"🏳️ کشور: {c_info['flag']} {c_info['name']}\n"
-        msg += f"🤝 اتحادیه: {user['alliance']}\n"
-        msg += f"🎖️ سطح: {user['level']} (XP: {user['xp']}/{user['level']*100})\n"
-        msg += f"💰 بودجه: {user['budget']}\n"
-        msg += f"🏆 برد: {user['wins']} | 💀 باخت: {user['losses']}\n\n"
-        msg += f"📦 *انبار منابع:*\n{inv_text}\n\n"
-        msg += "⚠️ *توجه:* با انصراف، تمام اطلاعات شما پاک می‌شود!"
-        
+        msg = f"👤 *پروفایل فرمانده*\n\n🏳️ کشور: {c_info['flag']} {c_info['name']}\n🤝 اتحادیه: {user['alliance']}\n🎖️ سطح: {user['level']} (XP: {user['xp']}/{user['level']*100})\n💰 بودجه: {user['budget']}\n🏆 برد: {user['wins']} | 💀 باخت: {user['losses']}\n\n📦 *انبار منابع:*\n{inv_text}"
         kb = {"inline_keyboard": [
             [{"text": "💎 خرید سکه", "callback_data": "buy_coins"}],
             [{"text": "🚪 انصراف از بازی", "callback_data": "resign_confirm"}],
@@ -546,9 +375,7 @@ def handle_callback(chat_id, data, cb_id):
             return
         prices = get_equipment_prices()
         c_info = COUNTRIES[user['country']]
-        text = f"🏪 *فروشگاه تجهیزات*\n"
-        text += f"🏳️ کشور: {c_info['flag']} {c_info['name']}\n"
-        text += f"💰 بودجه شما: {user['budget']}\n\n"
+        text = f"🏪 *فروشگاه تجهیزات*\n🏳️ کشور: {c_info['flag']} {c_info['name']}\n💰 بودجه شما: {user['budget']}\n\n"
         kb = {"inline_keyboard": []}
         for k, v in EQUIPMENT.items():
             text += f"{v['emoji']} {v['name']} | ⚔️{v['attack']} 🛡️{v['defense']} | 💰{prices[k]}\n"
@@ -576,8 +403,7 @@ def handle_callback(chat_id, data, cb_id):
         kb = {"inline_keyboard": []}
         for res_key, res_info in RESOURCES.items():
             amount = user['inventory'].get(res_key, 0)
-            text += f"{res_info['emoji']} {res_info['name']}: {amount}\n"
-            text += f"   (خرید: 💰{res_info['buy_price']} | فروش: 💰{res_info['sell_price']})\n"
+            text += f"{res_info['emoji']} {res_info['name']}: {amount}\n   (خرید: 💰{res_info['buy_price']} | فروش: 💰{res_info['sell_price']})\n"
             kb["inline_keyboard"].append([
                 {"text": f"خرید {res_info['emoji']} {res_info['name']}", "callback_data": f"trade_buy:{res_key}"},
                 {"text": f"فروش {res_info['emoji']} {res_info['name']}", "callback_data": f"trade_sell:{res_key}"}
@@ -653,10 +479,7 @@ def handle_callback(chat_id, data, cb_id):
         c1 = COUNTRIES[user['country']]
         c2 = COUNTRIES[target_user['country']]
         
-        report = f"⚔️ *گزارش نبرد*\n\n"
-        report += f"🔴 {c1['flag']} شما: ⚔️{p1_atk} 🛡️{p1_def}\n"
-        report += f"🔵 {c2['flag']} دشمن: ⚔️{p2_atk} 🛡️{p2_def}\n"
-        report += "━━━━━━━━━━━━━━\n"
+        report = f"⚔️ *گزارش نبرد*\n\n🔴 {c1['flag']} شما: ⚔️{p1_atk} 🛡️{p1_def}\n🔵 {c2['flag']} دشمن: ⚔️{p2_atk} 🛡️{p2_def}\n━━━━━━━━━━━━━━\n"
         
         if dmg1 > dmg2:
             loot = int(target_user['budget'] * 0.15)
@@ -692,17 +515,12 @@ def handle_callback(chat_id, data, cb_id):
         if not user or not user['country']:
             send_message(chat_id, "❌ ابتدا کشور انتخاب کنید.", reply_markup=main_menu_kb())
             return
-        text = f"🤝 *مدیریت اتحادیه*\n\n"
-        text += f"اتحادیه فعلی: *{user['alliance']}*\n\n"
-        text += "برای تغییر، پیام متنی بفرستید:\n`اتحادیه نام_جدید`"
+        text = f"🤝 *مدیریت اتحادیه*\n\nاتحادیه فعلی: *{user['alliance']}*\n\nبرای تغییر، پیام متنی بفرستید:\n`اتحادیه نام_جدید`"
         kb = {"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_main"}]]}
         send_message(chat_id, text, reply_markup=kb)
 
     elif data == "menu_lottery":
-        text = "🎰 *لاتاری شانس*\n\n"
-        text += "هزینه بلیط: 💰 100\n"
-        text += "🥇 شانس 10%: برنده 1,000 سکه\n"
-        text += "🏆 شانس 1%: برنده 5,000 سکه"
+        text = "🎰 *لاتاری شانس*\n\nهزینه بلیط: 💰 100\n🥇 شانس 10%: برنده 1,000 سکه\n🏆 شانس 1%: برنده 5,000 سکه"
         kb = {"inline_keyboard": [
             [{"text": "🎟️ خرید بلیط (100 سکه)", "callback_data": "lottery_play"}],
             [{"text": "🔙 بازگشت", "callback_data": "menu_main"}]
@@ -781,20 +599,24 @@ def handle_callback(chat_id, data, cb_id):
         kb = {"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_admin"}]]}
         send_message(chat_id, text, reply_markup=kb)
 
-    elif data == "admin_manage_channels":
+    # ═══════════════════════════════════════════
+    #  ✨ مدیریت کانال/گروه اجباری (اصلاح شده)
+    # ═══════════════════════════════════════════
+    elif data == "admin_manage_chats":
         if not is_admin(chat_id): return
-        channels = get_forced_channels()
-        text = "📢 *مدیریت کانال‌های اجباری*\n\n"
-        if channels:
-            text += "*کانال‌های فعلی:*\n"
-            for ch_id, ch_title in channels:
-                text += f"• {ch_title} (`{ch_id}`)\n"
+        chats = get_forced_chats()
+        text = "📢 *مدیریت لینک‌های اجباری (کانال/گروه)*\n\n"
+        if chats:
+            text += "*لیست فعلی:*\n"
+            for ch_id, ch_title, ch_type in chats:
+                type_emoji = "📢" if ch_type == "channel" else "👥"
+                text += f"{type_emoji} {ch_title} (`{ch_id}`)\n"
         else:
-            text += "_(هیچ کانالی تنظیم نشده)_\n"
+            text += "_(هیچ کانال یا گروهی تنظیم نشده)_\n"
         text += "\n*دستورات:*\n"
-        text += "`add_channel @username` - افزودن کانال\n"
-        text += "`remove_channel @username` - حذف کانال\n"
-        text += "`remove_channel ID` - حذف با شناسه عددی"
+        text += "`add_chat @username` - افزودن کانال یا گروه\n"
+        text += "`remove_chat @username` - حذف با نام کاربری\n"
+        text += "`remove_chat ID` - حذف با شناسه عددی"
         kb = {"inline_keyboard": [[{"text": "🔙 بازگشت", "callback_data": "menu_admin"}]]}
         send_message(chat_id, text, reply_markup=kb)
 
@@ -803,7 +625,7 @@ def handle_callback(chat_id, data, cb_id):
 #  حلقه اصلی ربات
 # ═══════════════════════════════════════════
 def main():
-    print("🎮 ربات جنگ جهانی (نسخه نهایی) در حال اجراست...")
+    print("🎮 ربات جنگ جهانی (نسخه نهایی با عضویت اجباری تضمینی) در حال اجراست...")
     last_update_id = None
     
     while True:
@@ -894,40 +716,46 @@ def main():
                                 else:
                                     send_message(chat_id, "❌ فرمت: `set_price tank 150`")
                             
-                            elif text.startswith("add_channel ") and admin_user:
+                            # ✨ افزودن کانال یا گروه اجباری
+                            elif text.startswith("add_chat ") and admin_user:
                                 parts = text.split(maxsplit=1)
                                 if len(parts) == 2:
-                                    channel_username = parts[1].strip()
+                                    chat_input = parts[1].strip()
                                     try:
-                                        res = requests.post(f"{BASE_URL}getChat", json={'chat_id': channel_username}, timeout=10).json()
+                                        # دریافت اطلاعات دقیق چت برای به دست آوردن ID عددی
+                                        res = requests.post(f"{BASE_URL}getChat", json={'chat_id': chat_input}, timeout=10).json()
                                         if res.get('ok'):
-                                            ch_id = res['result']['id']
-                                            ch_title = res['result'].get('title') or res['result'].get('username') or channel_username
-                                            add_forced_channel(ch_id, ch_title)
-                                            send_message(chat_id, f"✅ کانال «{ch_title}» (`{ch_id}`) به لیست اجباری اضافه شد.", reply_markup=admin_menu_kb())
+                                            real_id = res['result']['id']
+                                            title = res['result'].get('title') or res['result'].get('username') or chat_input
+                                            chat_type = res['result'].get('type', 'unknown') # channel, supergroup, group
+                                            
+                                            add_forced_chat(real_id, title, chat_type)
+                                            type_name = "کانال" if chat_type == "channel" else "گروه"
+                                            send_message(chat_id, f"✅ {type_name} «{title}» (`{real_id}`) به لیست اجباری اضافه شد.\n\n⚠️ *مهم:* مطمئن شوید ربات در این {type_name} **ادمین** است، در غیر این صورت بررسی عضویت کار نخواهد کرد!", reply_markup=admin_menu_kb())
                                         else:
-                                            send_message(chat_id, f"❌ کانال یافت نشد. مطمئن شوید ربات در کانال عضو است.\nخطا: {res.get('description', '')}")
+                                            send_message(chat_id, f"❌ چت یافت نشد. مطمئن شوید ربات در آن عضو است.\nخطا: {res.get('description', '')}")
                                     except Exception as e:
                                         send_message(chat_id, f"❌ خطا: {e}")
                                 else:
-                                    send_message(chat_id, "❌ فرمت: `add_channel @username`")
+                                    send_message(chat_id, "❌ فرمت: `add_chat @username`")
                             
-                            elif text.startswith("remove_channel ") and admin_user:
+                            # ✨ حذف کانال یا گروه اجباری
+                            elif text.startswith("remove_chat ") and admin_user:
                                 parts = text.split(maxsplit=1)
                                 if len(parts) == 2:
-                                    channel_input = parts[1].strip()
-                                    channels = get_forced_channels()
+                                    chat_input = parts[1].strip()
+                                    chats = get_forced_chats()
                                     removed = False
-                                    for ch_id, ch_title in channels:
-                                        if channel_input == ch_title or channel_input == str(ch_id) or channel_input == f"@{ch_title.lstrip('@')}":
-                                            remove_forced_channel(ch_id)
-                                            send_message(chat_id, f"✅ کانال «{ch_title}» حذف شد.", reply_markup=admin_menu_kb())
+                                    for ch_id, ch_title, ch_type in chats:
+                                        if chat_input == ch_title or chat_input == str(ch_id) or chat_input == f"@{ch_title.lstrip('@')}":
+                                            remove_forced_chat(ch_id)
+                                            send_message(chat_id, f"✅ {ch_title} حذف شد.", reply_markup=admin_menu_kb())
                                             removed = True
                                             break
                                     if not removed:
-                                        send_message(chat_id, "❌ کانال یافت نشد.")
+                                        send_message(chat_id, "❌ موردی با این مشخصات یافت نشد.")
                                 else:
-                                    send_message(chat_id, "❌ فرمت: `remove_channel @username` یا `remove_channel ID`")
+                                    send_message(chat_id, "❌ فرمت: `remove_chat @username` یا `remove_chat ID`")
                             
                             elif admin_user:
                                 send_message(chat_id, "🔧 *پنل مدیریت پشتیبان*", reply_markup=main_menu_kb(is_admin_user=True))
@@ -935,7 +763,7 @@ def main():
                             elif not user or not user['country']:
                                 send_message(chat_id, "👋 به بازی جنگ جهانی خوش آمدید!\nلطفاً کشور خود را انتخاب کنید:", reply_markup=main_menu_kb())
                             
-                            elif not text.startswith('/') and not text.startswith("اتحادیه ") and not text.startswith("send_msg ") and not text.startswith("add_money ") and not text.startswith("remove_money ") and not text.startswith("set_price ") and not text.startswith("add_channel ") and not text.startswith("remove_channel "):
+                            elif not text.startswith('/') and not text.startswith("اتحادیه ") and not text.startswith("send_msg ") and not text.startswith("add_money ") and not text.startswith("remove_money ") and not text.startswith("set_price ") and not text.startswith("add_chat ") and not text.startswith("remove_chat "):
                                 if admin_user:
                                     msg = f"🇺🇳 *سازمان ملل متحد*\n\n{text}"
                                 else:
